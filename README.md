@@ -109,7 +109,7 @@ Obsidian -protoset my-protos.bin list
 ```
 ```
 # Using proto sources
-```
+
 Obsidian -import-path ../protos -proto my-stuff.proto list
 ```
 The "list" verb also lets you see all methods in a particular service:
