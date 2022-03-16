@@ -15,16 +15,15 @@ COPY . .
 
 
 # Build the Go app
-RUN go build -o ./out/Obsidian .
+
 
 # Start fresh from a smaller image
 FROM alpine:3.9 
 RUN apk add ca-certificates
 
-COPY --from=build_base /tmp/Obsidianp/out/Obsidian /app/Obsidian
 
 # This container exposes port 8080 to the outside world
 EXPOSE 8080
 
 # Run the binary program produced by `go install`
-CMD ["/app/Obsidian"
+CMD ["/app/Obsidian"]
