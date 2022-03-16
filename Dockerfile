@@ -1,13 +1,4 @@
-FROM golang as firststage
-WORKDIR /work
-ADD . .
+FROM golang:1.7.1
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o myapp .
-#
-# Step #2: Copy the executable into a minimal image (less than 5MB) 
-#         which doesn't contain the build tools and artifacts
-FROM alpine:latest  
-RUN apk --no-cache add ca-certificates
-WORKDIR /root/
-COPY --from=firststage /work/myapp .
-CMD ["./Obsidian"]  
+COPY . /go/src/github.com/docker/go
+WORKDIR /go/src/github.com/docker/go
