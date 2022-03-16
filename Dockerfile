@@ -7,7 +7,6 @@ WORKDIR /tmp/Obsidian
 
 # We want to populate the module cache based on the go.{mod,sum} files.
 
-COPY go.sum .
 
 
 
