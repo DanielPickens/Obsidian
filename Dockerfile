@@ -1,7 +1,7 @@
 FROM golang as firststage
 WORKDIR /work
 ADD . .
-RUN go test ./...
+
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o myapp .
 #
 # Step #2: Copy the executable into a minimal image (less than 5MB) 
@@ -10,4 +10,4 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 COPY --from=firststage /work/myapp .
-CMD ["./myapp"]  
+CMD ["./Obsidian"]  
