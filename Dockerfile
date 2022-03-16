@@ -1,9 +1,9 @@
-FROM golang:1.12-alpine AS build_base
+FROM golang:1.7.1-alpine AS build_base
 
 RUN apk add --no-cache git
 
 # Set the Current Working Directory inside the container
-WORKDIR /tmp/Obsidian
+WORKDIR /Obsidian
 
 # We want to populate the module cache based on the go.{mod,sum} files.
 
