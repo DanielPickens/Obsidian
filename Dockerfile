@@ -1,4 +1,4 @@
-ROM golang:1.10.1 AS builder
+Run golang:1.10.1 AS builder
 RUN go version
 
 COPY . /go/src/github.com/DanielPickens/Obsidian/
