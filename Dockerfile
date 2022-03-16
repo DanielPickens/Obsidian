@@ -1,24 +1,30 @@
-Run golang:1.10.1 AS builder
-RUN go version
+FROM golang:1.17-buster as builder
 
-COPY . /go/src/github.com/DanielPickens/Obsidian/
-WORKDIR /go/src/github.com/DanielPickens/Obsidian/
-RUN set -x && \
-    go get github.com/golang/dep/cmd/dep && \
-    dep ensure -v
+# Create and change to the app directory.
+WORKDIR /app
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o app .
+# Retrieve application dependencies.
+# This allows the container build to reuse cached dependencies.
+# Expecting to copy go.mod and if present go.sum.
+COPY go.* ./
+RUN go mod download
 
-# Stage 2 (to create a downsized "container executable", ~7MB)
+# Copy local code to the container image.
+COPY . ./
 
-# If you need SSL certificates for HTTPS, replace `FROM SCRATCH` with:
-#
-#   FROM alpine:3.7
-#   RUN apk --no-cache add ca-certificates
-#
-FROM scratch
-WORKDIR /root/
-COPY --from=builder /go/src/github.com/DanielPickens/Obsidian/app .
+# Build the binary.
+RUN go build -v -o server
 
-EXPOSE 8123
-ENTRYPOINT ["./app"]
+# Use the official Debian slim image for a lean production container.
+# https://hub.docker.com/_/debian
+# https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
+FROM debian:buster-slim
+RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the binary to the production image from the builder stage.
+COPY --from=builder /app/server /app/server
+
+# Run the web service on container startup.
+CMD ["/app/server"]
