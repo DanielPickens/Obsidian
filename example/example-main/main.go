@@ -6,7 +6,7 @@ import (
 
 	"github.com/DanielPickens/Obsidian"
 	
-	_ "github.com/DanielPickens/Obsidian/example/internal/pb"
+	_ "github.com/DanielPickens/Obsidian/example/pb"
 )
 
 
