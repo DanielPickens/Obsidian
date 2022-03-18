@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 BINARY_NAME=Obsidian
 
 build:
@@ -62,5 +61,4 @@ vet:
  go vet
 
 lint:
->>>>>>> 0f301bffd4aa10594c6da70693e12fb631d3a28a
  golangci-lint run --enable-all
