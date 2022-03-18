@@ -1,10 +1,15 @@
 module github.com/DanielPickens/Obsidian
 
 go 1.17
+ 
 
 require (
 	github.com/golang/protobuf v1.5.2 // indirect
+<<<<<<< HEAD
 	
+=======
+	github.com/DanielPickens/Obsidian/example/pb v1.2.3
+>>>>>>> 6af867315ef95678ab83cee20076c74c0a8f4ce1
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/spf13/cobra v1.4.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
