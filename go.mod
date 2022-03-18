@@ -3,7 +3,7 @@ module Obsidian
 go 1.17
 
 require (
-	github.com/DanielPickens/Obsidian v0.0.0-20220318003249-719fc177ae95
+	github.com/DanielPickens/Obsidian v0.0.0
 	github.com/golang/protobuf v1.5.2
 	github.com/spf13/cobra v1.4.0
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f
