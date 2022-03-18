@@ -20,4 +20,5 @@ jobs:
 
 
     - name: Test
+      run: go get github.com/DanielPickens/Obsidian/example/server
       run: go test -v ./...
