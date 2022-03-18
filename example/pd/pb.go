@@ -1,4 +1,4 @@
-package main
+package pd
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/DanielPickens/Obsidian"
 	
-	"github.com/DanielPickens/Obsidian/example/pb"
+	"github.com/DanielPickens/Obsidian/example/pd"
 )
 
 
