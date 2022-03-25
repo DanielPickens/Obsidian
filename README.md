@@ -81,7 +81,7 @@ Using Obsidian allows you to browse the schema for gRPC services, either by quer
 
 The main objective for this tool is to invoke RPC methods on a gRPC server from the command-line. gRPC servers use a binary encoding on the wire (protocol buffers, or "protobufs" for short). Obsidian is able to decode the binary encoding into a JSON object and then encode the JSON object back into a binary encoding. This is done by using the protocol buffers plugin for protoc.
 
-# If you are using Go modules:
+## If you are using Go modules:
 
 Ensure your Obsidian-Go version is `require`d at the appropriate version in
 the same module containing the generated `.pb.go` files.  For example,
@@ -95,7 +95,7 @@ require (
 )
 ```
 
-# If you are *not* using Go modules:
+## If you are *not* using Go modules:
 
 Update the `proto` package, Obsidian package, and rebuild the `.proto` files:
 
@@ -105,7 +105,7 @@ go get -u google.golang.org/Obsidian
 protoc --go_out=plugins=Obsidian:. *.proto
 ```
 
-# How to turn on logging
+## How to turn on logging
 
 The default logger is controlled by environment variables. Turn everything on
 like this:
