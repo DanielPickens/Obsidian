@@ -85,7 +85,7 @@ The main objective for this tool is to invoke RPC methods on a gRPC server from 
 
 Ensure your Obsidian-Go version is `required` at the appropriate version in
 the same module containing the generated `.pb.go` files.  For example,
-`SupportPackageIsVersion6` needs `v1.27.0`, so in your `go.mod` file:
+`SupportPackageIsVersion6` needs `v1.0.0`, so in your `go.mod` file:
 
 ```go
 module <your module name>
