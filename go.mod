@@ -1,7 +1,6 @@
 module github.com/DanielPickens/Obsidian
 
-go 1.17
- 
+go 1.18
 
 require (
 	github.com/golang/protobuf v1.5.2 // indirect

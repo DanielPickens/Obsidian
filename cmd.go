@@ -1,4 +1,4 @@
-package Obsidian
+package cmd
 
 import (
 	"encoding/json"

@@ -1,4 +1,4 @@
-package testing
+package testserver
 
 //go:generate protoc --go_out=plugins=grpc:./ test.proto
 //go:generate protoc --descriptor_set_out=./test.protoset test.proto
