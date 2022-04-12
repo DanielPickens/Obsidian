@@ -92,6 +92,18 @@ func (TestServer) StreamingOutputCall(req *StreamingOutputCallRequest, str TestS
 	return nil
 }
 
+
+
+func tryprotoctest(ctx context.Context, req *Empty) (*Empty, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Internal, "no metadata")
+	}
+	if _, ok := md[MetadataRequestHeaders]; !ok {
+		return nil, status.Error(codes.Internal, "no metadata")
+	}
+	return req, nil
+}
 // StreamingInputCall accepts a sequence of requests and issues one response
 // for which the respdnding server returns the aggregated size of client payloads
 // as the result.
