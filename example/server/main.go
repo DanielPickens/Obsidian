@@ -22,7 +22,12 @@ func (s *server) GetNumber(ctx context.Context, in *pb.Empty) (*pb.Number, error
 	log.Println("GetNumber")
 	return &pb.Number{Value: 42}, nil
 }
-
+// Returns a str as a response from port to the request then returns an error if the request is invalid and if
+// the request is valid function is called.
+func (s *port) StreamingOutputCall(req *pb.StreamingOutputCallRequest, str pb.TestService_StreamingOutputCallServer) error {
+	log.Println("StreamingOutputCall")
+	return nil
+}
 // Echo returns the data received in the request
 func (s *server) Echo(ctx context.Context, in *pb.EchoData) (*pb.EchoData, error) {
 	log.Println("Echo")
