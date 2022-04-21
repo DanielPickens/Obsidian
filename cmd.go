@@ -131,6 +131,167 @@ func RunE(
 		return nil
 	}
 }
+//runF accepts a function that takes in client connection and returns a result.
+// if func mainmarshall returns repoinse in json from data parameter call.
+func RunF(
+	method string,
+	newClient func(*grpc.ClientConn) interface{},
+	mainMarshall func(interface{}) ([]byte, error),
+) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		conn, err := dial(*addr)
+		if err != nil {
+			return err
+		}
+		defer conn.Close()
+		c := newClient(conn)
+		cv := reflect.ValueOf(c)
+		method := cv.MethodByName(method)
+		if method.IsValid() {
+			result := method.Call([]reflect.Value{
+				reflect.ValueOf(context.Background()),
+			})
+			if len(result) != 2 {
+				panic("service methods should always return 2 values (error and result)")
+			}
+			if !result[1].IsNil() {
+				return result[1].Interface().(error)
+			}
+			out := result[0].Interface()
+			data, err := mainMarshall(out)
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(data))
+		}
+
+		return nil
+	}
+}
+
+// runH accepts a sequence of requests and returns the result 
+// to the respdnding server and from a string arg paremter for a dial method call on parameter addr of newclient payload
+// and checks if value of new client connection method call is a acceptable method call for validation to client connedtion to grpc server, which if its not, it returns an error.
+func RunH(
+	method string,
+	newClient func(*grpc.ClientConn) interface{},
+	newServer func(*grpc.Server) interface{},
+	clientMarshall func(interface{}) ([]byte, error),
+	serverMarshall func(interface{}) ([]byte, error),
+) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		conn, err := dial(*addr)
+		if err != nil {
+			return err
+		}
+		defer conn.Close()
+		c := newClient(conn)
+		cv := reflect.ValueOf(c)
+		method := cv.MethodByName(method)
+		if method.IsValid() {
+			result := method.Call([]reflect.Value{
+				reflect.ValueOf(context.Background()),
+			})
+			if len(result) != 2 {
+				panic("service methods should always return 2 values (error and result)")
+			}
+			if !result[1].IsNil() {
+				return result[1].Interface().(error)
+			}
+			out := result[0].Interface()
+			data, err := clientMarshall(out)
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(data))
+		}
+
+		server := newServer(nil)
+		sv := reflect.ValueOf(server)
+		method = sv.MethodByName(method)
+		if method.IsValid() {
+			result := method.Call([]reflect.Value{
+				reflect.ValueOf(context.Background()),
+			})
+			if len(result) != 2 {
+				panic("service methods should always return 2 values (error and result)")
+			}
+			if !result[1].IsNil() {
+				return result[1].Interface().(error)
+func runG( 
+	method string,
+	newClient func(*grpc.ClientConn) interface{},
+) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		conn, err := dial(*addr)
+		if err != nil {
+			return err
+		}
+	func mainmarshall(data []byte, v interface{}) error {
+		return json.Unmarshal(data, v)
+	}
+		defer conn.Close()
+		c := newClient(conn)
+		cv := reflect.ValueOf(c)
+		method := cv.MethodByName(method)
+		if method.IsValid() {
+			in := reflect.New(proto.MessageType(inT).Elem()).Interface()
+			if len(*input) > 0 {
+				if err := json.Unmarshal([]byte(*input), in); err != nil {
+					return err
+				}
+			}
+
+			result := method.Call([]reflect.Value{
+				reflect.ValueOf(context.Background()),
+				reflect.ValueOf(in),
+			})
+			if len(result) != 2 {
+				panic("service methods should always return 2 values (error and result)")
+			}
+			if !result[1].IsNil() {
+				return result[1].Interface().(error)
+			}
+			out := result[0].Interface()
+			data, err := json.MarshalIndent(out, "", "    ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(data))
+		}
+
+		return nil
+	}
+}
+
+func dial(addr string) (*grpc.ClientConn, error) {
+	return grpc.Dial(addr, grpc.WithInsecure())
+}
+		defer conn.Close()
+		c := newClient(conn)
+		cv := reflect.ValueOf(c)
+		method := cv.MethodByName(method)
+		if method.IsValid() {
+			result := method.Call([]reflect.Value{
+				reflect.ValueOf(context.Background()),
+			})
+			if len(result) != 2 {
+				panic("service methods should always return 2 values (error and result)")
+			}
+			if !result[1].IsNil() {
+				return result[1].Interface().(error)
+			}
+			out := result[0].Interface()
+			data, err := json.MarshalIndent(out, "", "    ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(data))
+		}
+
+		return nil
+	}
+}
 // func dial connects to the server using a secure transport and insecure and then returns a grpc.ClientConn.
 func dial(addr string) (*grpc.ClientConn, error) {
 	var opts []grpc.DialOption
