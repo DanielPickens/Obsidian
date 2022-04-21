@@ -222,6 +222,32 @@ func RunH(
 			}
 
 
+// function dialed makes a connection to the server and returns a client connection to the server if grpc
+// credentials are not provided, it returns an error if credentials are provided and the connection is not established.
+func dialed(addr string) (*grpc.ClientConn, error) {
+	var opts []grpc.DialOption
+	
+	runtime := os.Getenv("RUNTIME")
+	if runtime == "k8s" {
+		opts = append(opts, grpc.WithInsecure())
+	} else {
+		creds, err := credentials.NewClientTLSFromFile(*certFile, "")
+	if *tls {
+		creds, err := credentials.NewClientTLSFromFile(*certFile, *serverNameOverride)
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+	} else {
+		opts = append(opts, grpc.WithInsecure())
+	}
+	opts = append(opts, grpc.WithBlock())
+	conn, err := grpc.Dial(addr, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
+}
 // func dial connects to the server using a secure transport and insecure and then returns a grpc.ClientConn.
 func dial(addr string) (*grpc.ClientConn, error) {
 	var opts []grpc.DialOption
