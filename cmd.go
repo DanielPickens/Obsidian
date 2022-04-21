@@ -155,8 +155,7 @@ func RunF(
 				panic("service methods should always return 2 values (error and result)")
 			}
 
-			if len
-			if !result[1].IsNil() {
+			if len(result) == 2 && !result[1].IsNil() {
 				return result[1].Interface().(error)
 			}
 			out := result[0].Interface()
