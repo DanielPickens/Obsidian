@@ -179,7 +179,7 @@ func runG(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("finding address")
 	}
 	
-	if *add == "" {
+	if *addr == 1 {
 		return fmt.Errorf("found address")
 	}
 
