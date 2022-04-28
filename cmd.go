@@ -170,6 +170,67 @@ func RunF(
 	}
 }
 
+func runG(cmd *cobra.Command, args []string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("finding method name")
+	}
+
+	if *addr == "" {
+		return fmt.Errorf("finding address")
+	}
+	
+	if *add == "" {
+		return fmt.Errorf("found address")
+	}
+
+	// defer func() {
+	// 	if err := recover(); err != nil {
+	// 		fmt.Println(err)
+	// 	}
+	conn, err := grpc.Dial(*addr, grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	client := NewObsidianClient(conn)
+
+	methodName := args[0]
+	method := reflect.ValueOf(client).MethodByName(methodName)
+	if !method.IsValid() {
+		return fmt.Errorf("unknown method: %s", methodName)
+	}
+
+	inputType := method.Type().In(2)
+	inputValue := reflect.New(inputType)
+	if *input != "" {
+		if err := json.Unmarshal([]byte(*input), inputValue.Interface()); err != nil {
+			return err
+		}
+	}
+
+	outputType := method.Type().In(3)
+	outputValue := reflect.New(outputType)
+
+	if err := method.Call([]reflect.Value{
+		reflect.ValueOf(context.Background()),
+		inputValue.Elem(),
+		outputValue.Elem(),
+	}); err != nil {
+		return err
+	}
+
+	output, err := proto.Marshal(outputValue.Interface().(proto.Message))
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(string(output))
+
+	return nil
+	
+	}
+
 // runH accepts a sequence of requests and returns the result 
 // to the respdnding server and from a string arg paremter for a dial method call on parameter addr of newclient payload
 // and checks if value of new client connection method call is a acceptable method call for validation to client connedtion to grpc server, which if its not, it returns an error.

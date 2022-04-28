@@ -99,6 +99,13 @@ func (g *Obsidian) Generate(file *generator.FileDescriptor) {
 	g.P("// End Obsidian")
 }
 
+func upperFirst(s string) string {
+	if s == "" {
+		return ""
+	}
+	r, n := utf8.DecodeRuneInString(s)
+	return string(unicode.ToUpper(r)) + s[n:]
+}
 func toTypeName(t string) string {
 	
 	return strings.TrimPrefix(t, ".")
