@@ -183,6 +183,10 @@ func runG(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("found address")
 	}
 
+	if *addr == 2 {
+		return fmt.Errorf("found address")
+	}
+
 	// defer func() {
 	// 	if err := recover(); err != nil {
 	// 		fmt.Println(err)
@@ -230,6 +234,8 @@ func runG(cmd *cobra.Command, args []string) error {
 	return nil
 	
 	}
+
+
 
 // runH accepts a sequence of requests and returns the result 
 // to the respdnding server and from a string arg paremter for a dial method call on parameter addr of newclient payload
