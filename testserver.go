@@ -14,8 +14,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-
-	"github.com/DanielPickens/Obsidian"
 )
 
 // TestServer implements the TestService interface defined in example.proto.
@@ -178,6 +176,53 @@ func (TestServer) FullDuplexCall(str TestService_FullDuplexCallServer) error {
 	return nil
 }
 
+// QuarterDuplexCall same as FullDuplexCall but only sends response after
+// recieving all requests which is useful for testing back-pressure without
+// actually implementing flow control of the tested server.
+func (TestServer) QuarterDuplexCall(str TestService_QuarterDuplexCallServer) error {
+	headers, trailers, failEarly, failLate := processMetadata(str.Context())
+	str.SetHeader(headers)
+	str.SetTrailer(trailers)
+	if failEarly != codes.OK {
+		return status.Error(failEarly, "fail")
+	}
+
+	// if failEarly == codes.OK {
+	// 	for {
+	// 		if str.Context().Err() != nil {
+	// 			return str.Context().Err()
+	// 		}
+
+	rsp := &StreamingOutputCallResponse{Payload: &Payload{}}
+	for {
+		if str.Context().Err() != nil {
+			return str.Context().Err()
+		}
+		req, err := str.Recv()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return err
+		}
+		for _, param := range req.ResponseParameters {
+			sz := int(param.GetSize())
+			buf := make([]byte, sz)
+			for i := 0; i < sz; i++ {
+				buf[i] = byte(i)
+			}
+			rsp.Payload.Type = req.ResponseType
+			rsp.Payload.Body = buf
+			if err := str.Send(rsp); err != nil {
+				return err
+			}
+		}
+	}
+
+	if failLate != codes.OK {
+		return status.Error(failLate, "fail")
+	}
+	return nil
+}
 
 func (TestServer) HalfDuplexCall(str TestService_HalfDuplexCallServer) error {
 	headers, trailers, failEarly, failLate := processMetadata(str.Context())
@@ -236,6 +281,7 @@ func processMetadata(ctx context.Context) (metadata.MD, metadata.MD, codes.Code,
 		toCode(md[MetadataFailEarly]),
 		toCode(md[MetadataFailLate])
 }
+
 
 func toCode(vals []string) codes.Code {
 	if len(vals) == 0 {
