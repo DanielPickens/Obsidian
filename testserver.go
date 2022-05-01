@@ -138,6 +138,42 @@ func (TestServer) StreamingInputCall(str TestService_StreamingInputCallServer) e
 	return nil
 }
 
+// StreamingOutputCallWithInterceptor is the same as StreamingOutputCall, but
+// the server interceptor is run before the service handler and the client
+// interceptor is run after the service handler when testing client-side flow 
+// control.
+func (TestServer) StreamingOutputCallWithInterceptor(ctx context.Context, req *StreamingOutputCallRequest) (*StreamingOutputCallResponse, error) {
+	headers, trailers, failEarly, failLate := processMetadata(ctx)
+	grpc.SetHeader(ctx, headers)
+	grpc.SetTrailer(ctx, trailers)
+	if failEarly != codes.OK {
+		return nil, status.Error(failEarly, "fail")
+	}
+	if failLate != codes.OK {
+		return nil, status.Error(failLate, "fail")
+	}
+
+	rsp := &StreamingOutputCallResponse{Payload: &Payload{}}
+	for _, param := range req.ResponseParameters {
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+		delayMicros := int64(param.GetIntervalUs()) * int64(time.Microsecond)
+		if delayMicros > 0 {
+			time.Sleep(time.Duration(delayMicros))
+		}
+		sz := int(param.GetSize())
+		buf := make([]byte, sz)
+		for i := 0; i < sz; i++ {
+			buf[i] = byte(i)
+		}
+		rsp.Payload.Type = req.ResponseType
+		rsp.Payload.Body = buf
+	}
+
+	return rsp, nil
+}
+
 // ThreeQuarterDuplexCall performs three-quarter duplex streaming RPCtest call in gRPC to 
 // test the client-side flow control in gRPC.
 func (TestServer) ThreeQuarterDuplexCall( str TestService_ThreeQuarterDuplexCallServer) error {
