@@ -287,7 +287,7 @@ func RunH(
 			if !result[1].IsNil() {
 				return result[1].Interface().(error)
 			}
-
+			
 
 // function dialed makes a connection to the server and returns a client connection to the server if grpc
 // credentials are not provided, it returns an error if credentials are provided and the connection is not established.
@@ -320,3 +320,4 @@ func dial(addr string) (*grpc.ClientConn, error) {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())
 	return grpc.Dial(addr, opts...)  
+}
