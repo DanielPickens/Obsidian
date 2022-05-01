@@ -102,6 +102,7 @@ func tryprotoctest(ctx context.Context, req *Empty) (*Empty, error) {
 	}
 	return req, nil
 }
+
 // StreamingInputCall accepts a sequence of requests and issues one response
 // for which the respdnding server returns the aggregated size of client payloads
 // as the result.
@@ -136,6 +137,40 @@ func (TestServer) StreamingInputCall(str TestService_StreamingInputCallServer) e
 	}
 	return nil
 }
+
+// ThreeQuarterDuplexCall performs three-quarter duplex streaming RPCtest call in gRPC to 
+// test the client-side flow control in gRPC.
+func (TestServer) ThreeQuarterDuplexCall( str TestService_ThreeQuarterDuplexCallServer) error {
+	headers, trailers, failEarly, failLate := processMetadata(str.Context())
+	str.SetHeader(headers)
+	str.SetTrailer(trailers)
+	if failEarly != codes.OK {
+		return status.Error(failEarly, "fail")
+	}
+
+	for {
+		if str.Context().Err() != nil {
+			return str.Context().Err()
+		}
+		if req, err := str.Recv(); err != nil {
+			if err == io.EOF {
+				break
+			}
+			return err
+		} else {
+			if err := str.Send(req); err != nil {
+				return err
+			}
+		}
+	}
+
+	if failLate != codes.OK {
+		return status.Error(failLate, "fail")
+	}
+	return nil
+}
+
+
 
 func (TestServer) FullDuplexCall(str TestService_FullDuplexCallServer) error {
 	headers, trailers, failEarly, failLate := processMetadata(str.Context())
@@ -280,6 +315,13 @@ func processMetadata(ctx context.Context) (metadata.MD, metadata.MD, codes.Code,
 		grpcurl.MetadataFromHeaders(md[MetadataReplyTrailers]),
 		toCode(md[MetadataFailEarly]),
 		toCode(md[MetadataFailLate])
+}
+
+func toServer(s interface{}) *grpc.Server {
+	if srv, ok := s.(*grpc.Server); ok {
+		return srv
+	}
+	return nil
 }
 
 
