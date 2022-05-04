@@ -6,9 +6,9 @@ import (
 	"os"
 
 	"github.com/AlecAivazis/survey/v2/terminal"
+	"github.com/DanielPickens/Obsidian/internal/caller"
+	"github.com/DanielPickens/Obsidian/internal/cliext"
 	"github.com/urfave/cli/v2"
-	"github.com/vadimi/grpc-client-cli/internal/caller"
-	"github.com/vadimi/grpc-client-cli/internal/cliext"
 )
 
 const (
