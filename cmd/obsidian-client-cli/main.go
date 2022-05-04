@@ -310,3 +310,14 @@ func parseMsgFormat(val interface{}) caller.MsgFormat {
 
 	return caller.JSON
 }
+
+func healthCmd(c *cli.Context) error {
+	opts := &startOpts{
+		Health: true,
+	}
+	err := runApp(c, opts)
+	if err != nil {
+		return cli.Exit(err, 1)
+	}
+	return nil
+}

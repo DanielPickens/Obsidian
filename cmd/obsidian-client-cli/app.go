@@ -408,3 +408,20 @@ func (a *app) getMethod(service *caller.ServiceMeta, methodName string) *desc.Me
 
 	return nil
 }
+
+func (a *app) getSurvey(service *caller.ServiceMeta, method *desc.MethodDescriptor) *survey.Question {
+	q := &survey.Question{
+		Name: "message",
+		Prompt: &survey.Input{
+			Message: "Enter a message:",
+			Default: "",
+		},
+	}
+
+	if method.GetInputType() != nil {
+		q.Prompt.Message = "Enter a message (or leave empty for default):"
+	}
+
+	return q
+}
+
