@@ -55,3 +55,8 @@ func TestDurationString(t *testing.T) {
 		})
 	}
 }
+
+func TestDurationParseError(t *testing.T) {
+	_, err := ParseDuration("")
+	assert.Error(t, err, "Expected non nil error")
+}
