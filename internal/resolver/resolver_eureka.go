@@ -55,6 +55,7 @@ func (b *eurekaBuilder) Scheme() string {
 	return "eureka"
 }
 
+
 type eurekaResolver struct {
 	EurekaServer string
 	EurekaPath   string

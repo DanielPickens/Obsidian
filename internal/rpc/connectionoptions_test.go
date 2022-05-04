@@ -54,3 +54,8 @@ func TestConnectionOptionsParseMetadata(t *testing.T) {
 		assert.Equal(t, test.expected, val)
 	}
 }
+
+func TestConnectionOptionsParseMetadataError(t *testing.T) {
+	_, err := NewConnectionOpts("test,metadata=key1:value1:value2")
+	assert.Error(t, err, "Expected non nil error")
+}
