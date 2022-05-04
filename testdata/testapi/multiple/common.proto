@@ -4,5 +4,6 @@ package testservice;
 
 message Result {
         string name = 1;
+        int32 age = 2;
 }
 

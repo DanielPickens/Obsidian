@@ -13,4 +13,5 @@ message GetData2Request{
 
 message GetData2Response {
         Result res = 1;
+        int32 age = 2;
 }

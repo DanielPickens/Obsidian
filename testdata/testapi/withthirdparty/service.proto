@@ -11,6 +11,8 @@ service Service {
 
 message GetDataRequest{
         shared.data.InputParameter p = 1;
+        int32 age = 2;
+        
 }
 
 message GetDataResponse {
