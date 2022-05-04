@@ -38,3 +38,4 @@ func TestWithKeepalive(t *testing.T) {
 	assert.Equal(t, keepalive, grpcConnFact.settings.keepalive)
 	assert.Equal(t, keepaliveTime, grpcConnFact.settings.keepaliveTime)
 }
+

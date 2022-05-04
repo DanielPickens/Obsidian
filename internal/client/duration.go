@@ -23,3 +23,12 @@ func ParseDuration(val string) (time.Duration, error) {
 
 	return 0, errors.New("invalid duration")
 }
+
+func ParsedValidDuration(val string) (time.Duration, bool) {
+	d, err := ParseDuration(val)
+	if err != nil {
+		return 0, false
+	}
+
+	return d, true
+}

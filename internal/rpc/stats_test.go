@@ -57,3 +57,4 @@ func TestRPCStatsRecording(t *testing.T) {
 		t.Errorf("invalid resp size: %d, expected: %d", s.RespSize(), expectedRespSize)
 	}
 }
+

@@ -55,3 +55,4 @@ func TestMapValueError(t *testing.T) {
 		assert.Error(t, err, tt)
 	}
 }
+

@@ -86,3 +86,11 @@ func ParseMapValue(val interface{}) map[string][]string {
 
 	return nil
 }
+
+func ParsedValidMapValue(val interface{}) (map[string][]string, bool) {
+	if mval, ok := val.(*MapValue); ok {
+		return mval.m, true
+	}
+
+	return nil, false
+}
