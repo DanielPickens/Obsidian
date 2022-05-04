@@ -8,6 +8,7 @@ option go_package = "/;grpc_testing";
 
 message User {
   int32 id = 1;
+
   string name = 2;
 }
 
