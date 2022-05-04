@@ -5,3 +5,4 @@ package testservice;
 message Result {
         string name = 1;
 }
+
