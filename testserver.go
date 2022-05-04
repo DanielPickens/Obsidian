@@ -52,6 +52,7 @@ func (TestServer) UnaryCall(ctx context.Context, req *SimpleRequest) (*SimpleRes
 	}, nil
 }
 
+
 // StreamingOutputCall accepts one request and issues a sequence of responses
 // that the respodning server then returns the payload with client desired type
 // and sizes as specified in the request's ResponseParameters.
