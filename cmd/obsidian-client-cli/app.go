@@ -398,3 +398,13 @@ func surveyIcons() survey.AskOpt {
 		icons.SelectFocus.Text = "→"
 	})
 }
+
+func (a *app) getMethod(service *caller.ServiceMeta, methodName string) *desc.MethodDescriptor {
+	for _, m := range service.Methods {
+		if m.GetName() == methodName {
+			return m
+		}
+	}
+
+	return nil
+}
