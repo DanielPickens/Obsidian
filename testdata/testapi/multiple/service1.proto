@@ -11,6 +11,8 @@ service Service1 {
 message GetData1Request{
 }
 
+
+
 message GetData1Response {
         Result res = 1;
 }
