@@ -69,3 +69,18 @@ func TestAnyResolver_LoadedFiles(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, userType, md.GetFullyQualifiedName())
 }
+
+func TestAnyResolver_LoadedFiles_With_Fallback(t *testing.T) {
+	sml := NewServiceMetadataProto([]string{"../../testdata/test.proto"}, nil)
+	meta, err := sml.GetServiceMetaDataList(context.Background())
+	require.NoError(t, err)	
+
+	r := &anyResolver{NewFileDescCache(meta)}
+
+	typeURL := "testing.protobuf.DoesNotExist"
+	m, err := r.Resolve(typeURL)
+	require.NoError(t, err)
+	
+	_, ok := m.(*wrappers.StringValue)
+	require.True(t, ok, "wrong type, expected: %s", typeURL)
+}
