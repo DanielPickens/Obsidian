@@ -133,3 +133,38 @@ func stringInArray(arr []string, s string) bool {
 
 	return false
 }
+
+func TestMetaDataListInvalidPath(t *testing.T) {
+	svcMeta := NewServiceMetadataProto([]string{"invalidpath"}, nil)
+	_, err := svcMeta.GetServiceMetaDataList(context.Background())
+	if err == nil {
+		t.Error("expected error, got nil")
+		return 
+	}
+}
+
+func TestMetaDataListValidPath(t *testing.T) {
+	svcMeta := NewServiceMetadataProto([]string{"../../testdata/testapi/single"}, nil)
+	_, err := svcMeta.GetServiceMetaDataList(context.Background())
+	if err != nil {
+		t.Error(err)
+		return 
+	}
+
+	svcMeta = NewServiceMetadataProto([]string{"../../testdata/testapi/multiple"}, nil)
+	_, err = svcMeta.GetServiceMetaDataList(context.Background())
+	if err != nil {
+		t.Error(err)
+		return 
+	}
+
+}
+
+func TestMetaDataListInvalidThirdParty(t *testing.T) {
+	svcMeta := NewServiceMetadataProto([]string{"../../testdata/testapi/withthirdparty"}, []string{"invalidpath"})
+	_, err := svcMeta.GetServiceMetaDataList(context.Background())
+	if err == nil {
+		t.Error("expected error, got nil")
+		return
+	}
+}
