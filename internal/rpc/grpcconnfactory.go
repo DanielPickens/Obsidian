@@ -210,6 +210,22 @@ func (f *GrpcConnFactory) getConn(target string, dial dialFunc, opts ...grpc.Dia
 	return conn.conn, conn.dialErr
 }
 
+// func minRecvMsgSize(s int) int {
+// 	if s < 0 {
+// 		return 0
+// 	}
+// 	return s
+// }
+
+
+
+// func WithMinRcvMsgSize(messageSize int) ConnFactoryOption {
+// 	return func(s *GrpcConnFactorySettings) {
+// 		s.minRecvMsgSize = messageSize
+// 	}
+// }
+
+
 func (f *GrpcConnFactory) Close() error {
 	f.conns.Lock()
 	defer f.conns.Unlock()
@@ -287,3 +303,23 @@ func getCredentials(insecure bool, caCert, cert, certKey string) (credentials.Tr
 
 	return credentials.NewTLS(&tlsCfg), nil
 }
+
+func dial(target string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
+	return grpc.Dial(target, opts...)
+
+	var dialOpts []grpc.DialOption
+	dialOpts = append(dialOpts, grpc.WithInsecure())
+	dialOpts = append(dialOpts, grpc.WithBlock())
+	dialOpts = append(dialOpts, grpc.WithTimeout(time.Second*10))
+	dialOpts = append(dialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxRecvMsgSize)))
+	dialOpts = append(dialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallSendMsgSize(maxSendMsgSize)))
+	dialOpts = append(dialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallSendMsgSize(maxSendMsgSize)))
+	dialOpts = append(dialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxRecvMsgSize)))
+	dialOpts = append(dialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxRecvMsgSize)))
+	dialOpts = append(dialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxRecvMsgSize)))
+	dialOpts = append(dialOpts, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxRecvMsgSize)))
+
+
+	return grpc.Dial(target, dialOpts...)
+}
+
