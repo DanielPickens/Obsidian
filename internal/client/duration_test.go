@@ -81,6 +81,32 @@ func TestDurationMarshalJSON(t *testing.T) {
 	}
 }
 
+func TestDurationBool(t *testing.T) {
+	tests := []struct {
+		name      string
+		val       time.Duration
+		expected  bool
+	}{
+		{name: "zero", val: 0, expected: false},
+		{name: "non-zero", val: 15 * time.Second, expected: true},
+	}
+
+	if testing.Short() {
+		tests = tests[:1]
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			res := tt.val.Bool()
+
+			assert.Equal(t, tt.expected, res)
+		}
+		)
+	}
+}
+
+
 func TestDurationParseError(t *testing.T) {
 	_, err := ParseDuration("")
 	assert.Error(t, err, "Expected non nil error")
