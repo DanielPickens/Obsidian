@@ -56,6 +56,31 @@ func TestDurationString(t *testing.T) {
 	}
 }
 
+func TestDurationMarshalJSON(t *testing.T) {
+	tests := []struct {
+		name      string
+		val       time.Duration
+		expected  string
+	}{
+		{name: "seconds", val: 15 * time.Second, expected: "15s"},
+		{name: "minutes", val: 5 * time.Minute, expected: "5m"},
+		{name: "mixed", val: 70 * time.Second, expected: "1m10s"},
+	}
+
+	if testing.Short() {
+		tests = tests[:1]
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := tt.val.MarshalJSON()
+			assert.Nil(t, err)
+			assert.Equal(t, []byte(tt.expected), res)
+		}
+		)
+	}
+}
+
 func TestDurationParseError(t *testing.T) {
 	_, err := ParseDuration("")
 	assert.Error(t, err, "Expected non nil error")

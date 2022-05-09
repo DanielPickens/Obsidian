@@ -88,3 +88,4 @@ func (s *serviceMetaData) GetServiceMetaDataList(ctx context.Context) ([]*Servic
 	defer rc.Reset()
 	return res, nil
 }
+

@@ -122,3 +122,41 @@ func findProtoFiles(paths []string) ([]string, error) {
 
 	return protofiles, nil
 }
+
+func NewServiceMetaDataProto() ServiceMetaData {
+	return &serviceMetadataProto{}
+}
+
+func NewServiceMetaDataProtoWithPath(paths []string) ServiceMetaData {
+
+	var protoImports []string
+	if len(paths) > 1 {
+		protoImports = paths[1:]
+	}
+
+	return &serviceMetadataProto{
+		protoPath:    paths[0:1],
+		protoImports: protoImports,
+	}
+}
+
+func NewServiceMetaDataProtoWithMultiPath(paths []string) ServiceMetaData {
+	
+	const ( maxPaths = 10 )
+	if len(paths) > maxPaths {
+		panic(fmt.Sprintf("max paths is %d", maxPaths))
+
+	}
+
+	var protoImports []string
+	if len(paths) > 1 {
+		protoImports = paths[1:]
+	}
+
+	return &serviceMetadataProto{
+		protoPath:    paths[0:1],
+		protoImports: protoImports,
+	}
+
+	return &serviceMetadataProto{}
+}
