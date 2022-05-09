@@ -65,3 +65,56 @@ func TestConnectionOptionsParseMetadataDuplicate(t *testing.T) {
 	_, err := NewConnectionOpts("test,metadata=key1:value1,metadata=key1:value2")
 	assert.Error(t, err, "Expected nil error")
 }
+
+func TestConnectionOptionsParsedMetaDataProxy(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"test,metadata=key1:", ""},
+		{"test,metadata=key1:value1", "value1"},
+		{"test,metadata=key1:value1:value2", "value1:value2"},
+		{"test,metadata=key1:value1,metadata=key2:value2", "value1"},
+		{"test,metadata=key1:value1,metadata=key1:value2", "value1"},
+	}
+
+	for _, test := range tests {
+		opts, _ := NewConnectionOpts(test.input)
+
+		val := opts.Metadata["key1"][0]
+		assert.Equal(t, test.expected, val)
+	}
+}
+
+
+func TestConnectionOptionsParseMetadataDuplicateProxy(t *testing.T) {
+	var opts * ConnectionOpts
+	var err error
+	opts, err = NewConnectionOpts("test,metadata=key1:value1,metadata=key1:value2")
+	assert.Error(t, err, "Expected nil error")
+	assert.Equal(t, "", opts.Authority)
+	assert.Equal(t, "", opts.Host)
+	assert.Equal(t, "", opts.Metadata["key1"][0])
+	assert.Equal(t, "", opts.Metadata["key1"][1])
+
+	opts, err = NewConnectionOpts("test,authority=test1.app,metadata=key1:value1,metadata=key1:value2")
+	assert.Error(t, err, "Expected nil error")
+	assert.Equal(t, "test1.app", opts.Authority)
+	assert.Equal(t, "", opts.Host)
+	assert.Equal(t, "", opts.Metadata["key1"][0])
+	assert.Equal(t, "", opts.Metadata["key1"][1])
+
+	opts, err = NewConnectionOpts("test,host=test1.app,metadata=key1:value1,metadata=key1:value2")
+	assert.Error(t, err, "Expected nil error")
+	assert.Equal(t, "", opts.Authority)
+	assert.Equal(t, "test1.app", opts.Host)
+	assert.Equal(t, "", opts.Metadata["key1"][0])
+	assert.Equal(t, "", opts.Metadata["key1"][1])
+
+	opts, err = NewConnectionOpts("test,authority=test1.app,host=test1.app,metadata=key1:value1,metadata=key1:value2")
+	assert.Error(t, err, "Expected nil error")
+	assert.Equal(t, "test1.app", opts.Authority)
+	assert.Equal(t, "test1.app", opts.Host)
+	assert.Equal(t, "", opts.Metadata["key1"][0])
+	assert.Equal(t, "", opts.Metadata["key1"][1])
+}
