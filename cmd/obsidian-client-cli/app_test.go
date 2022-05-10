@@ -9,12 +9,13 @@ import (
 	"strings"
 	"testing"
 
-	app_testing "github.com/Daniel/Obsidian-client-cli/internal/testing"
+	app_testing "github.com/Daniel/obsidian-client-cli/internal/testing"
 	"github.com/DanielPickens/obsidian-client-cli/internal/caller"
 	"github.com/spyzhov/ajson"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -95,7 +96,7 @@ func runAppServiceCalls(t *testing.T, appOpts *startOpts) {
 }
 
 func appCallUnaryServerError(t *testing.T, app *app) {
-	m, ok := findMethod(t, app, "Obsidian.testing.TestService", "UnaryCall")
+	m, ok := findMethod(t, app, "obsidian-client-cli.testing.TestService", "UnaryCall")
 	if !ok {
 		return
 	}
@@ -215,4 +216,123 @@ func appCallStreamOutput(t *testing.T, app *app, buf *bytes.Buffer) {
 
 	assert.Equal(t, jsonString(root, "$[0].user.name"), getEncBody(respSize1))
 	assert.Equal(t, jsonString(root, "$[1].user.name"), getEncBody(respSize2))
+}
+
+// appCallStreamOutputError is a test for a streaming output call with an error 
+// when the response is not a valid json and the output format is json is requesting json from the server
+// then the output is expected to be a json with the error in the response_status field and the response_parameters field is not present in the response
+// which is the same as the output of the server and is expecting a failed call for the client side to handle
+func appCallBidiStreamErrorProcessing(t *testing.T, app *app, buf *bytes.Buffer) {
+	m, ok := findMethod(t, app, "obsidian-client-cli.testing.TestService", "FullDuplexCall")
+	if !ok {
+		return
+	}
+	errCode := int32(codes.Aborted)
+	respSize1 := 3
+	respSize2 := 5
+	userName := "testuser"
+
+	msgTmpl := `
+{
+  "user": {
+    "name": "%s"
+  },
+  "response_parameters": [{
+    "size": %d
+  },{
+    "size": %d
+  }]
+}
+`
+
+	msgTmplErr := `
+{
+  "response_status": {
+    "code": %d
+  }
+}
+`
+
+	getEncBody := func(c int) string {
+		return strings.Repeat(userName, c)
+	}
+
+	msg := []byte(fmt.Sprintf(msgTmpl, getEncBody(1), respSize1, respSize2))
+	msgErr := []byte(fmt.Sprintf(msgTmplErr, errCode))
+
+	messages := [][]byte{msg, msgErr}
+	err := app.callStream(context.Background(), m, messages)
+	if err == nil {
+		t.Fatal("error expected, got nil")
+	}
+
+	s, _ := status.FromError(errors.Unwrap(err))
+	if s.Code() != codes.Code(errCode) {
+		t.Fatalf("expected status code %v, got %v", codes.Code(errCode), s.Code())
+	}
+
+	res := buf.Bytes()
+	root, err := ajson.Unmarshal(res)
+	if err != nil {
+		t.Fatalf("error unmarshaling result json: %v", err)
+	}
+
+	if len(root.MustArray()) < 2 {
+		t.Fatalf("expected %d elements, got %d", 2, len(root.MustArray()))
+	}
+}
+
+// appCallBidiStream is a test for a bidi streaming call
+// if the fullduplex call is successful the output is expected to be a json with the response_parameters field
+// then the call is successful the response fields will allow 
+// If there is not a response_parameters field the call is expected to be failed
+// if the call is not successful the response_status field will contain error messages and the response_parameters field will not be present
+func appCallBidiStreamError(t *testing.T, app *app, buf *bytes.Buffer) {
+	m, ok := findMethod(t, app, "obsidian-client-cli.testing.TestService", "FullDuplexCall")
+	if !ok {
+		return
+	}
+
+	errCode := int32(codes.Internal)
+	respSize1 := 3
+	respSize2 := 5
+	userName := "testuser"
+
+	msgTmpl := `
+{
+  "user": {
+    "name": "%s"
+  },
+  "response_parameters": [{
+    "size": %d
+  },{
+    "size": %d
+  }]
+}
+`
+
+	getEncBody := func(c int) string {
+		return strings.Repeat(userName, c)
+	}
+
+	msg := []byte(fmt.Sprintf(msgTmpl, getEncBody(1), respSize1, respSize2))
+
+	ctx := metadata.AppendToOutgoingContext(context.Background(), app_testing.MethodExitCode, fmt.Sprintf("%d", errCode))
+	messages := [][]byte{msg, msg}
+	err := app.callStream(ctx, m, messages)
+	if err == nil {
+		t.Error("error expected, got nil")
+		return
+	}
+
+	s, _ := status.FromError(errors.Unwrap(err))
+	if s.Code() != codes.Code(errCode) {
+		t.Errorf("expected status code %v, got %v, err: %v", codes.Code(errCode), s.Code(), err)
+		return
+	}
+
+	resp := strings.TrimSpace(buf.String())
+	if resp != "[]" {
+		t.Errorf("expected `[]` response, got %s", resp)
+	}
 }
