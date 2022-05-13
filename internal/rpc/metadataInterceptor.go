@@ -32,4 +32,13 @@ func appendMetadata(ctx context.Context, md map[string][]string) context.Context
 	return newCtx
 }
 
+func MetaDataBidiInterceptor(md map[string][]string) grpc.StreamServerInterceptor {
+	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		newCtx := appendMetadata(ss.Context(), md)
+		wrapped := grpc.StreamHandler(func(srv interface{}, ss grpc.ServerStream) error {
+			return handler(srv, &wrappedServerStream{ServerStream: ss})
+		})
+		return wrapped(srv, &wrappedServerStream{ServerStream: ss, ctx: newCtx})
+	}
+}
 
