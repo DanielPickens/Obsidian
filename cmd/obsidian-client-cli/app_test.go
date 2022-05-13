@@ -533,5 +533,5 @@ func checkStats(t *testing.T, app *app, msg []byte) {
 	assert.Equal(t, "/obsidian_client_cli.testing.TestService/UnaryCall", s.FullMethod())
 	assert.T
 }
-	
-	
+
+func checkStreamingOutputError()
