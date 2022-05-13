@@ -534,4 +534,24 @@ func checkStats(t *testing.T, app *app, msg []byte) {
 	assert.T
 }
 
-func checkStreamingOutputError()
+func checkStatsInOutput(t *testing.T, app *app, msg []byte, buf *bytes.Buffer) {
+	m, ok := findMethod(t, app, "obsidian_client_cli.testing.TestService", "UnaryCall")
+	if !ok {
+		return
+	}
+
+	err := app.callService(m, msg)
+	require.NoError(t, err)
+
+	res := buf.String()
+
+	expected := []string{
+		"Request duration:", "Request size:", "Response size:",
+		"Status:", "Request Headers:", "Response Headers:",
+		"Method:",
+	}
+
+	for _, e := range expected {
+		assert.Contains(t, res, e)
+	}
+}
