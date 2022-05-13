@@ -11,6 +11,7 @@ import (
 
 	app_testing "github.com/Daniel/obsidian-client-cli/internal/testing"
 	"github.com/DanielPickens/obsidian-client-cli/internal/caller"
+	"github.com/jhump/protoreflect/desc"
 	"github.com/spyzhov/ajson"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -336,3 +337,177 @@ func appCallBidiStreamError(t *testing.T, app *app, buf *bytes.Buffer) {
 		t.Errorf("expected `[]` response, got %s", resp)
 	}
 }
+
+func appCallBidiStream(t *testing.T, app *app, buf *bytes.Buffer) {
+	m, ok := findMethod(t, app, "obsidian-client-cli.testing.TestService", "FullDuplexCall")
+	if !ok {
+		return
+	}
+
+	respSize1 := 3
+	respSize2 := 5
+	userName := "testuser"
+
+	msgTmpl := `
+{
+  "user": {
+	"name": "%s"
+  },
+  "response_parameters": [{
+	"size": %d
+  },{
+	"size": %d
+  }]
+}
+`
+
+	getEncBody := func(c int) string {
+		return strings.Repeat(userName, c)
+	}
+
+	msg := []byte(fmt.Sprintf(msgTmpl, getEncBody(1), respSize1, respSize2))
+
+	messages := [][]byte{msg, msg}
+	err := app.callStream(context.Background(), m, messages)
+	require.NoError(t, err, "error executing callStream()")
+
+	res := buf.Bytes()
+	root, err := ajson.Unmarshal(res)
+	require.NoError(t, err, "error unmarshaling result json")
+
+	if len(root.MustArray()) < 2 {
+		t.Fatalf("expected %d elements", 2)
+	}
+
+	assert.Equal(t, jsonString(root, "$[0].user.name"), getEncBody(respSize1))
+	assert.Equal(t, jsonString(root, "$[1].user.name"), getEncBody(respSize2))
+}
+
+func AppCallFindMethod() {
+	t := &T{}
+	t.setup()
+	defer t.teardown()
+
+	m, ok := findMethod(t, t.app, "obsidian-client-cli.TestService", "Echo")
+	require.True(t, ok, "method not found")
+	require.NotNil(t, m, "method not found")
+}
+
+func appCallClientStream(t *testing.T, app *app, buf *bytes.Buffer) {
+	m, ok := findMethod(t, app, "obsidian_client_cli.testing.TestService", "StreamingInputCall")
+	if !ok {
+		return
+	}
+
+	userName := "testuser"
+
+	msgTmpl := `
+[
+  {
+    "user": {
+      "name": "%s"
+    }
+  },
+  {
+    "user": {
+      "name": "%s"
+    }
+  }
+]
+`
+
+	msg := fmt.Sprintf(msgTmpl, userName, userName)
+	msgArr, err := toJSONArray([]byte(msg))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = app.callClientStream(context.Background(), m, msgArr)
+	if err != nil {
+		t.Errorf("error executing callClientStream(): %v", err)
+		return
+	}
+
+	res := buf.Bytes()
+	root, err := ajson.Unmarshal(res)
+	if err != nil {
+		t.Errorf("error unmarshaling result json: %v", err)
+		return
+	}
+
+	if jsonInt32(root, "$.aggregated_payload_size") != int32(len(userName)*2) {
+		t.Errorf("aggregated_payload_size is invalid: %s", res)
+		return
+	}
+}
+
+func jsonInt32(n *ajson.Node, jsonPath string) int32 {
+	nodes, err := n.JSONPath(jsonPath)
+	if err != nil {
+		panic(err)
+	}
+
+	return int32(nodes[0].MustNumeric())
+}
+
+func appCallStreamInputError(t *testing.T, app *app, buf *bytes.Buffer) {
+	m, ok := findMethod(t, app, "obsidian_client_cli.testing.TestService", "StreamingInputCall")
+	if !ok {
+		return
+	}
+
+	errCode := int32(codes.Internal)
+	userName := "testuser"
+
+	msgTmpl := `
+[
+	{
+		"response_status": {
+		  "code": %d
+		}
+	  }
+	  
+]
+`
+
+	msg := fmt.Sprintf(msgTmpl, errCode)
+	
+	err := app.callStream(context.Background(), m, [][]byte{[]byte(msg)})
+	if err == nil {
+		t.Error("error expected, got nil")
+		return
+	}
+
+	s, _ := status.FromError(errors.Unwrap(err))
+	if s.Code() != codes.Code(errCode) {
+		t.Errorf("expectd status code %v, got %v", codes.Code(errCode), s.Code())
+	}
+}
+
+func jsonString(n *ajson.Node, jsonPath string) string {
+	nodes, err := n.JSONPath(jsonPath)
+	if err != nil {
+		panic(err)
+	}
+
+	return nodes[0].MustString()
+}
+
+
+func findMethod(t *testing.T, app *app, serviceName, methodName string) (*desc.MethodDescriptor, bool) {
+		m, err := app.selectMethod(app.getService(serviceName), methodName)
+		if err != nil {
+			t.Error(err)
+			return nil, false
+		}
+	
+		if m == nil {
+			t.Error("method not found")
+			return nil, false
+		}
+	
+		return m, true
+	}
+	
+	
