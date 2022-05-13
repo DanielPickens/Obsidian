@@ -8,8 +8,10 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	app_testing "github.com/Daniel/obsidian-client-cli/internal/testing"
+	"github.com/DanielPickens/Obsidian/internal/rpc"
 	"github.com/DanielPickens/obsidian-client-cli/internal/caller"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/spyzhov/ajson"
@@ -29,7 +31,6 @@ func TestMain(m *testing.M) {
 	defer app_testing.StopTestServer()
 	os.Exit(m.Run())
 }
-
 func TestAppServiceCalls(t *testing.T) {
 	runAppServiceCalls(t, &startOpts{
 		Target:        app_testing.TestServerAddr(),
@@ -509,5 +510,28 @@ func findMethod(t *testing.T, app *app, serviceName, methodName string) (*desc.M
 	
 		return m, true
 	}
+//Tests stats collection during urnary calls and bidi calls
+func checkStats(t *testing.T, app *app, msg []byte) {
+	m, ok := findMethod(t, app, "obsidian_client_cli.testing.TestService", "UnaryCall")
+	if !ok {
+		return
+	}
+
+	callTimeout := time.Duration(app.opts.Deadline) * time.Second
+	ctx, cancel := context.WithTimeout(rpc.WithStatsCtx(context.Background()), callTimeout)
+	defer cancel()
+
+	err := app.callClientStream(ctx, m, [][]byte{msg})
+	require.NoError(t, err)
+
+	s := rpc.ExtractRpcStats(ctx)
+	require.NotNil(t, s, "stats are missing in ctx")
+	assert.NotEmpty(t, s.ReqHeaders())
+	assert.Equal(t, []string{"v1"}, s.ReqHeaders()["test"])
+	assert.Equal(t, []string{"a1", "a2"}, s.ReqHeaders()["test_multi"])
+	assert.NotEmpty(t, s.RespHeaders())
+	assert.Equal(t, "/obsidian_client_cli.testing.TestService/UnaryCall", s.FullMethod())
+	assert.T
+}
 	
 	
