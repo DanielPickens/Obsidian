@@ -555,3 +555,23 @@ func checkStatsInOutput(t *testing.T, app *app, msg []byte, buf *bytes.Buffer) {
 		assert.Contains(t, res, e)
 	}
 }
+
+func appStreamUrnaryError(t *testing.T, app *app, buf *bytes.Buffer) {
+	m, ok := findMethod(t, app, "obsidian_client_cli.testing.TestService", "UnaryCall")
+	if !ok {
+		return
+	}
+
+	errCode := int32(codes.Internal)
+	msg := fmt.Sprintf(`{"response_status": {"code": %d}}`, errCode)
+	err := app.callStream(context.Background(), m, [][]byte{[]byte(msg)})
+	if err == nil {
+		t.Error("error expected, got nil")
+		return
+	}
+
+	s, _ := status.FromError(errors.Unwrap(err))
+	if s.Code() != codes.Code(errCode) {
+		t.Errorf("expectd status code %v, got %v", codes.Code(errCode), s.Code())
+	}
+}
