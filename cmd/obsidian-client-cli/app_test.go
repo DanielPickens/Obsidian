@@ -575,3 +575,76 @@ func appStreamUrnaryError(t *testing.T, app *app, buf *bytes.Buffer) {
 		t.Errorf("expectd status code %v, got %v", codes.Code(errCode), s.Code())
 	}
 }
+
+func TestStatsHandler(t *testing.T) {
+	buf := &bytes.Buffer{}
+	app, err := newApp(&startOpts{
+		Target:        app_testing.TestServerAddr(),
+		Deadline:      15,
+		IsInteractive: false,
+		Verbose:       true,
+		w:             buf,
+		Headers: map[string][]string{
+			"test":       {"v1"},
+			"test_multi": {"a1", "a2"},
+		},
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	userId := int32(123)
+	userName := "testuser"
+
+	msgTmpl := `
+{
+  "user": { "id": %d, "name": "%s" }
+}
+`
+
+	msg := []byte(fmt.Sprintf(msgTmpl, userId, userName))
+
+	t.Run("checkStats", func(t *testing.T) {
+		checkStats(t, app, msg)
+	})
+
+	t.Run("checkStatsInOutput", func(t *testing.T) {
+		checkStatsInOutput(t, app, msg, buf)
+	})
+}
+
+func TestToJSONArrayCoversion(t *testing.T) {
+	cases := []struct {
+		name        string
+		msg         string
+		msgCount    int
+		errExpected bool
+	}{
+		{name: "OneMessage", msg: `[{"name": "str"}]`, msgCount: 1, errExpected: false},
+		{name: "OneMessageNoArraySyntax", msg: `{"name": "str"}`, msgCount: 1, errExpected: false},
+		{name: "OneMessageNoArraySyntaxWhiteSpaces", msg: `
+{"name": "str"}
+`, msgCount: 1, errExpected: false},
+		{name: "MultipleMessages", msg: `[{"name": "str1"},{"name": "str2"}]`, msgCount: 2, errExpected: false},
+		{name: "InvalidSyntax", msg: `[{"name": "str1"}`, errExpected: true},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			res, err := toJSONArray([]byte(c.msg))
+			if c.errExpected && err == nil {
+				t.Error("json error expected, got nil")
+				return
+			}
+			if !c.errExpected && err != nil {
+				t.Errorf("no json error expected, got %v", err)
+				return
+			}
+
+			if len(res) != c.msgCount {
+				t.Errorf("expected %d messages, got %d", c.msgCount, len(res))
+			}
+		})
+	}
+}
