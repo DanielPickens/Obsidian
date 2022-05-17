@@ -743,3 +743,86 @@ func TestAuthorityHeader(t *testing.T) {
 	}
 }
 
+func TestAuthorityHeaderError(t *testing.T) { 
+	tests := []struct {
+		name              string
+		target            string
+		expectedAuthority string
+	}{
+		{
+			name:              "defaultAuthority",
+			target:            app_testing.TestServerAddr(),
+			expectedAuthority: app_testing.TestServerAddr(),
+		},
+		{
+			name:              "customAuthorityInTarget",
+			target:            app_testing.TestServerAddr() + ",authority=" + app_testing.TestServerAddr(),
+			expectedAuthority: app_testing.TestServerAddr(),
+		},
+		{
+			name:              "customAuthorityArg",
+			target:            app_testing.TestServerAddr() + ",authority=" + app_testing.TestServerAddr(),
+			expectedAuthority: app_testing.TestServerAddr(),
+		},
+	}
+
+	for _, tt := range tests {
+
+		t.Run(tt.name, func(t *testing.T) {
+
+			buf := &bytes.Buffer{}
+
+
+			app, err := newApp(&startOpts{
+
+				Target:        tt.target,
+				Deadline:      15,
+				Authority:     tt.expectedAuthority,
+
+
+				IsInteractive: false,
+
+				w:             buf,
+
+			})
+
+			if err != nil {
+
+				t.Fatal(err)
+
+			}
+
+			m, ok := findMethod(t, app, "obsidian_client_cli.testing.TestService", "UnaryCall")
+
+			if !ok {
+
+				return
+
+			}
+
+			userId := int32(123)
+
+			userName := "testuser"
+
+			msgTmpl := `
+
+			{
+
+				"user": { "id": %d, "name": "%s" }
+
+			}
+
+			`
+
+			msg := []byte(fmt.Sprintf(msgTmpl, userId, userName))
+
+			ctx := metadata.AppendToOutgoingContext(context.Background(), app_testing.CheckHeader, ":authority="+tt.expectedAuthority)
+
+			err = app.callClientStream(ctx, m, [][]byte{msg})
+
+			require.Error(t, err, "error executing callClientStream()")
+
+		}
+	}
+}
+
