@@ -648,3 +648,98 @@ func TestToJSONArrayCoversion(t *testing.T) {
 		})
 	}
 }
+
+func TestToJSONArrayError(t *testing.T) { 
+	cases := []struct {
+		name        string
+		msg         string
+		errExpected bool
+	}{
+		{name: "InvalidSyntax", msg: `[{"name": "str1"}`, errExpected: true},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			res, err := toJSONArray([]byte(c.msg))
+			if c.errExpected && err == nil {
+				t.Error("json error expected, got nil")
+				return
+			}
+			if !c.errExpected && err != nil {
+				t.Errorf("no json error expected, got %v", err)
+				return
+			}
+
+			if len(res) != 0 {
+				t.Errorf("expected 0 messages, got %d", len(res))
+			}
+		})
+	}
+}
+
+func TestAuthorityHeader(t *testing.T) {
+	authority1 := "testservice1"
+	authority2 := "testservice2"
+	tests := []struct {
+		name              string
+		authority         string
+		target            string
+		expectedAuthority string
+	}{
+		{
+			name:              "defaultAuthority",
+			target:            app_testing.TestServerAddr(),
+			expectedAuthority: app_testing.TestServerAddr(),
+		},
+		{
+			name:              "customAuthorityInTarget",
+			target:            app_testing.TestServerAddr() + ",authority=" + authority1,
+			expectedAuthority: authority1,
+		},
+		{
+			name:              "customAuthorityArg",
+			target:            app_testing.TestServerAddr() + ",authority=" + authority1,
+			authority:         authority2,
+			expectedAuthority: authority2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			buf := &bytes.Buffer{}
+
+			app, err := newApp(&startOpts{
+				Target:        tt.target,
+				Deadline:      15,
+				Authority:     tt.authority,
+				IsInteractive: false,
+				w:             buf,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			m, ok := findMethod(t, app, "obsidian_client_cli.testing.TestService", "UnaryCall")
+			if !ok {
+				return
+			}
+
+			userId := int32(123)
+			userName := "testuser"
+
+			msgTmpl := `
+{
+  "user": { "id": %d, "name": "%s" }
+}
+`
+
+			msg := []byte(fmt.Sprintf(msgTmpl, userId, userName))
+
+			ctx := metadata.AppendToOutgoingContext(context.Background(), app_testing.CheckHeader, ":authority="+tt.expectedAuthority)
+
+			err = app.callClientStream(ctx, m, [][]byte{msg})
+			require.NoError(t, err, "error executing callClientStream()")
+		})
+	}
+}
+
