@@ -37,3 +37,14 @@ func TestEnumError(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestEnumEmpty(t *testing.T) {
+	ev := &EnumValue{
+		Enum:    []string{"v1", "v2"},
+		Default: "v2",
+	}
+
+	err := ev.Set("")
+
+	assert.Error(t, err)
+}
+
