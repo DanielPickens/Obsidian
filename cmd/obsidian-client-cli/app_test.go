@@ -743,86 +743,109 @@ func TestAuthorityHeader(t *testing.T) {
 	}
 }
 
-func TestAuthorityHeaderError(t *testing.T) { 
+func TestAuthorityHeaderError(t *testing.T) {
+	authority1 := "testservice1"
+	authority2 := "testservice2"
 	tests := []struct {
 		name              string
+		authority         string
 		target            string
 		expectedAuthority string
 	}{
 		{
 			name:              "defaultAuthority",
 			target:            app_testing.TestServerAddr(),
+
 			expectedAuthority: app_testing.TestServerAddr(),
+
+			errExpected: false,
 		},
 		{
 			name:              "customAuthorityInTarget",
-			target:            app_testing.TestServerAddr() + ",authority=" + app_testing.TestServerAddr(),
-			expectedAuthority: app_testing.TestServerAddr(),
+
+
+			target:            app_testing.TestServerAddr() + ",authority=" + authority1,
+			expectedAuthority: authority1,
+			errExpected:      false,
 		},
 		{
 			name:              "customAuthorityArg",
-			target:            app_testing.TestServerAddr() + ",authority=" + app_testing.TestServerAddr(),
-			expectedAuthority: app_testing.TestServerAddr(),
+
+			target:            app_testing.TestServerAddr() + ",authority=" + authority1,
+			authority:         authority2,
+
+			expectedAuthority: authority2,
+
+			errExpected: false,
+
+		},
+
+		{
+			name:              "customAuthorityArgError",
+
+			target:            app_testing.TestServerAddr() + ",authority=" + authority1,
+
+
+
+
+			expectedAuthority: authority1,
+
+			errExpected: true,
+
 		},
 	}
 
 	for _, tt := range tests {
 
 		t.Run(tt.name, func(t *testing.T) {
-
 			buf := &bytes.Buffer{}
 
-
 			app, err := newApp(&startOpts{
-
 				Target:        tt.target,
 				Deadline:      15,
-				Authority:     tt.expectedAuthority,
-
-
+				Authority:     tt.authority,
 				IsInteractive: false,
-
 				w:             buf,
-
 			})
-
 			if err != nil {
+
 
 				t.Fatal(err)
 
 			}
 
 			m, ok := findMethod(t, app, "obsidian_client_cli.testing.TestService", "UnaryCall")
-
 			if !ok {
-
 				return
-
 			}
 
 			userId := int32(123)
-
 			userName := "testuser"
 
 			msgTmpl := `
+{
+	  "user": { "id": %d, "name": "%s" }
+}
+`
 
-			{
-
-				"user": { "id": %d, "name": "%s" }
-
-			}
-
-			`
 
 			msg := []byte(fmt.Sprintf(msgTmpl, userId, userName))
 
 			ctx := metadata.AppendToOutgoingContext(context.Background(), app_testing.CheckHeader, ":authority="+tt.expectedAuthority)
 
 			err = app.callClientStream(ctx, m, [][]byte{msg})
+			require.NoError(t, err, "error executing callClientStream()")
 
-			require.Error(t, err, "error executing callClientStream()")
+			if tt.errExpected {
+				if !strings.Contains(buf.String(), "authority header not found") {
+					t.Errorf("expected error, got %s", buf.String())
+				}
+			} else {
 
+				if !strings.Contains(buf.String(), "authority header found") {
+					t.Errorf("expected no error, got %s", buf.String())
+				}
+			}
 		}
 	}
 }
-
