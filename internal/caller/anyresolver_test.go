@@ -84,3 +84,4 @@ func TestAnyResolver_LoadedFiles_With_Fallback(t *testing.T) {
 	_, ok := m.(*wrappers.StringValue)
 	require.True(t, ok, "wrong type, expected: %s", typeURL)
 }
+
