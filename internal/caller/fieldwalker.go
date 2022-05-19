@@ -26,3 +26,19 @@ func (fw *FieldWalker) Walk(md *desc.MessageDescriptor, walkFn func(*desc.FieldD
 		walkFn(f)
 	}
 }
+
+func (fw *FieldWalker) WalkEnums(md *desc.MessageDescriptor, walkFn func(*desc.EnumDescriptor)) {
+	if md == nil {
+		return
+	}
+	if _, ok := fw.processed[md.GetName()]; ok {
+		return
+	}
+	fw.processed[md.GetName()] = struct{}{}
+	for _, f := range md.GetFields() {
+		fw.WalkEnums(f.GetMessageType(), walkFn)
+		if f.GetEnumType() != nil {
+			walkFn(f.GetEnumType())
+		}
+	}
+}
