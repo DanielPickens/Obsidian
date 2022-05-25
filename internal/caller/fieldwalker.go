@@ -42,3 +42,35 @@ func (fw *FieldWalker) WalkEnums(md *desc.MessageDescriptor, walkFn func(*desc.E
 		}
 	}
 }
+
+func (fw *FieldWalker) WalkMaps(md *desc.MessageDescriptor, walkFn func(*desc.FieldDescriptor)) {
+	if md == nil {
+		return
+	}
+	if _, ok := fw.processed[md.GetName()]; ok {
+		return
+	}
+	fw.processed[md.GetName()] = struct{}{}
+	for _, f := range md.GetFields() {
+		fw.WalkMaps(f.GetMessageType(), walkFn)
+		if f.GetMapType() != nil {
+			walkFn(f)
+		}
+	}
+}
+
+func (fw *FieldWalker) WalkOneOfs(md *desc.MessageDescriptor, walkFn func(*desc.OneOfDescriptor)) {
+	if md == nil {
+		return
+	}
+	if _, ok := fw.processed[md.GetName()]; ok {
+		return
+	}
+	fw.processed[md.GetName()] = struct{}{}
+	for _, f := range md.GetFields() {
+		fw.WalkOneOfs(f.GetMessageType(), walkFn)
+		if f.GetOneOf() != nil {
+			walkFn(f.GetOneOf())
+		}
+	}
+}
