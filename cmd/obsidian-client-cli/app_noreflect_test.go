@@ -32,3 +32,12 @@ func TestAppServiceCallsReflect(t *testing.T) {
 		Protos:        []string{"../../testdata/test.proto"},
 	})
 }
+
+func TestAppServiceCallsReflectInteractive(t *testing.T) {
+	runAppServiceCalls(t, &startOpts{
+		Target:        app_testing.TestServerReflectAddr(),
+		Deadline:      15,
+		IsInteractive: true,
+		Protos:        []string{"../../testdata/test.proto"},
+	})
+}
