@@ -41,3 +41,21 @@ func TestAppServiceCallsReflectInteractive(t *testing.T) {
 		Protos:        []string{"../../testdata/test.proto"},
 	})
 }
+
+func TestAppServiceCallsNoReflectMultiple(t *testing.T) {
+	runAppServiceCalls(t, &startOpts{
+		Target:        app_testing.TestServerNoReflectAddr(),
+		Deadline:      15,
+		IsInteractive: false,
+		Protos:        []string{"../../testdata/test.proto", "../../testdata/test.proto"},
+	})
+}
+
+func TestAppServiceCallsNoReflectMultipleInteractive(t *testing.T) {
+	runAppServiceCalls(t, &startOpts{
+		Target:        app_testing.TestServerNoReflectAddr(),
+		Deadline:      15,
+		IsInteractive: true,
+		Protos:        []string{"../../testdata/test.proto", "../../testdata/test.proto"},
+	})
+}
