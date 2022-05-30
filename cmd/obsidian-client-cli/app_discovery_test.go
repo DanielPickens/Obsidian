@@ -124,33 +124,3 @@ func TestDiscoverCommand_NoService_NoDiscover(t *testing.T) {
 	}
 }
 
-func TestDiscoverCommand_NoService_NoDiscover_NoService(t *testing.T) {
-	app, err := newApp(&startOpts{
-		Target:        app_testing.TestServerAddr(),
-		Deadline:      15,
-		IsInteractive: false,
-		Discover:      false,
-		Service:       "TestService",
-	})
-
-	buf := &bytes.Buffer{}
-	app.w = buf
-
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	err = app.Start([]byte("{}"))
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	res := buf.String()
-
-	if strings.Contains(res, "service TestService") {
-		t.Errorf("expected no service def, got %s", res)
-		return
-	}
-}
