@@ -39,3 +39,34 @@ func TestWithKeepalive(t *testing.T) {
 	assert.Equal(t, keepaliveTime, grpcConnFact.settings.keepaliveTime)
 }
 
+func TestWithHeaders(t *testing.T) {
+	headers := map[string][]string{
+		"header1": {"val1"},
+	}
+	grpcConnFact := NewGrpcConnFactory(WithHeaders(headers))
+
+	assert.Equal(t, headers, grpcConnFact.settings.headers)
+}
+
+func TestWithTimeout(t *testing.T) {
+	timeout := 30 * time.Second
+	grpcConnFact := NewGrpcConnFactory(WithTimeout(timeout))
+
+	assert.Equal(t, timeout, grpcConnFact.settings.timeout)
+}
+
+func TestWithProtos(t *testing.T) {
+	protos := []string{"../../testdata/test.proto"}
+	grpcConnFact := NewGrpcConnFactory(WithProtos(protos))
+
+	assert.Equal(t, protos, grpcConnFact.settings.protos)
+}
+
+func TestWithProtosInteractive(t *testing.T) {
+	protos := []string{"../../testdata/test.proto"}
+	grpcConnFact := NewGrpcConnFactory(WithProtos(protos), WithInteractive())
+
+	assert.Equal(t, protos, grpcConnFact.settings.protos)
+	assert.True(t, grpcConnFact.settings.isInteractive)
+}
+
