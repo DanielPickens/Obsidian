@@ -26,3 +26,23 @@ func TestToLowerCamelCase(t *testing.T) {
 		})
 	}
 }
+
+func TestToUpperCamelCase(t *testing.T) {
+	tests := []struct {
+		name     string
+		text     string
+		expected string
+	}{
+		{name: "no_transform", text: "testString", expected: "TestString"},
+		{name: "mixed_case", text: "test_Str", expected: "TestStr"},
+		{name: "lower_case", text: "test_Str", expected: "TestStr"},
+		{name: "multiple_occurances", text: "test_Str_str", expected: "TestStrStr"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := toUpperCamelCase(tt.text)
+			assert.Equal(t, tt.expected, res)
+		})
+	}
+}

@@ -74,3 +74,35 @@ func (fw *FieldWalker) WalkOneOfs(md *desc.MessageDescriptor, walkFn func(*desc.
 		}
 	}
 }
+
+func (fw *FieldWalker) WalkOneOfFields(md *desc.MessageDescriptor, walkFn func(*desc.FieldDescriptor)) {
+	var oneOfs []*desc.OneOfDescriptor
+	for _, f := range md.GetFields() {
+		if f.GetOneOf() != nil {
+			oneOfs = append(oneOfs, f.GetOneOf())
+		}
+	}
+	for _, oneOf := range oneOfs {
+		for _, f := range oneOf.GetChoices() {
+			fw.WalkOneOfFields(f.GetMessageType(), walkFn)
+			walkFn(f)
+		}
+	}
+}
+
+// 	if md == nil {
+// 		return
+// 	}
+// 	if _, ok := fw.processed[md.GetName()]; ok {
+// 		return
+// 	}
+// 	fw.processed[md.GetName()] = struct{}{}
+// 	for _, f := range md.GetFields() {
+// 		fw.WalkOneOfFields(f.GetMessageType(), walkFn)
+// 		if f.GetOneOf() != nil {
+// 			for _, of := range f.GetOneOf().GetChoices() {
+// 				walkFn(of)
+// 			}
+// 		}
+// 	}
+// }

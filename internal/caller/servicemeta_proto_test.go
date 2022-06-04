@@ -195,3 +195,30 @@ func TestMetaDataPathValidity(t *testing.T) {
 		})
 	}
 }
+
+func TestMetaDataListOptionsPathValidity(t *testing.T) {
+	tests := []struct {
+		name     string
+		path     string
+		expected bool
+	}{
+		{
+			name:     "valid",
+			path:     "../../testdata/testapi/single",
+			expected: true,
+		},
+		{
+			name:     "invalid",
+			path:     "invalidpath",
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if isValidPath(tt.path) != tt.expected {
+				t.Errorf("expected: %t, got: %t", tt.expected, !tt.expected)
+			}
+		})
+	}
+}
