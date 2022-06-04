@@ -70,3 +70,18 @@ func TestWithProtosInteractive(t *testing.T) {
 	assert.True(t, grpcConnFact.settings.isInteractive)
 }
 
+func TestWithoutProtosInteractive(t *testing.T) {
+	protos := []string{"../../testdata/test.proto"}
+	grpcConnFact := NewGrpcConnFactory(WithProtos(protos), WithoutInteractive())
+
+	assert.Equal(t, protos, grpcConnFact.settings.protos)
+	assert.False(t, grpcConnFact.settings.isInteractive)
+}
+
+func TestWithoutMergeMetaData(t *testing.T) {
+	grpcConnFact := NewGrpcConnFactory(WithoutMergeMetaData())
+
+	assert.False(t, grpcConnFact.settings.mergeMetadata)
+}
+
+
