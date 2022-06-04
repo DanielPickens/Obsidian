@@ -85,3 +85,18 @@ func TestAnyResolver_LoadedFiles_With_Fallback(t *testing.T) {
 	require.True(t, ok, "wrong type, expected: %s", typeURL)
 }
 
+func TestAnyResolver_LoadedFiles_WellKnown(t *testing.T) {
+	sml := NewServiceMetadataProto([]string{"../../testdata/test.proto"}, nil)
+	meta, err := sml.GetServiceMetaDataList(context.Background())
+	require.NoError(t, err)
+
+	r := &anyResolver{NewFileDescCache(meta)}
+
+	typeURL := "google.protobuf.StringValue"
+	m, err := r.Resolve(typeURL)
+	require.NoError(t, err)
+
+	_, ok := m.(*wrappers.StringValue)
+	require.True(t, ok, "wrong type, expected: %s", typeURL)
+}
+

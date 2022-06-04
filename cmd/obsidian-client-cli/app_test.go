@@ -849,3 +849,58 @@ func TestAuthorityHeaderError(t *testing.T) {
 		}
 	}
 }
+
+func CheckStatsInAuthorityCalls() {
+	authority1 := "testservice1"
+	authority2 := "testservice2"
+	tests := []struct {
+		name              string
+		authority         string
+		target            string
+		expectedAuthority string
+	}{
+		{
+			name:              "defaultAuthority",
+			target:            app_testing.TestServerAddr(),
+			expectedAuthority: app_testing.TestServerAddr(),
+		},
+		{
+			name:              "customAuthorityInTarget",
+			target:            app_testing.TestServerAddr() + ",authority=" + authority1,
+			expectedAuthority: authority1,
+		},
+		{
+			name:              "customAuthorityArg",
+			target:            app_testing.TestServerAddr() + ",authority=" + authority1,
+			authority:         authority2,
+			expectedAuthority: authority2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			buf := &bytes.Buffer{}
+
+			app, err := newApp(&startOpts{
+				Target:        tt.target,
+				Deadline:      15,
+				Authority:     tt.authority,
+				IsInteractive: false,
+				w:             buf,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			m, ok := findMethod(t, app, "obsidian_client_cli.testing.TestService", "UnaryCall")
+			if !ok {
+				return
+			}
+
+			userId := int32(123)
+			userName := "testuser"
+
+			msgTmpl := `
+{
+  "user": { "id": %d, "name": "%s" }
+}
