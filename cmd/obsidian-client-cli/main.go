@@ -321,3 +321,17 @@ func healthCmd(c *cli.Context) error {
 	}
 	return nil
 }
+
+func parsehealtcmdmetrics(c *cli.Context) ([]string, error) {
+	var metrics []string
+	for _, arg := range c.Args() {
+		if arg == "*" {
+			metrics = nil
+			break
+		}
+		metrics = append(metrics, arg)
+	}
+	return metrics, nil
+}
+
+func 

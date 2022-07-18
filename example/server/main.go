@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net"
+	"testing"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -45,5 +46,17 @@ func main() {
 	log.Printf("Listening on %s", port)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
+	}
+}
+
+func checkRegisteredServerSampleCalls(t *testing.T, s *grpc.Server) {
+	// Check the number of registered calls.
+	registered := s.GetCallsInfo()
+	if len(registered) != 1 {
+		t.Fatalf("Expected 1 registered calls, got %v", len(registered))
+	}
+	// Check the name of the only registered call.
+	if registered[0].FullMethod != "/grpc.testing.TestService/StreamingOutputCall" {
+		t.Fatalf("Expected registered call to be /grpc.testing.TestService/StreamingOutputCall, got %v", registered[0].FullMethod)
 	}
 }
