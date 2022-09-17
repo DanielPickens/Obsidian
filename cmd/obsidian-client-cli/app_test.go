@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"testing/quick"
 	"time"
 
 	app_testing "github.com/Daniel/obsidian-client-cli/internal/testing"
@@ -904,3 +905,140 @@ func CheckStatsInAuthorityCalls() {
 {
   "user": { "id": %d, "name": "%s" }
 }
+`
+// TODO: add a test for the case where the authority is not set in the target or the authority flag.
+			msg := []byte(fmt.Sprintf(msgTmpl, userId, userName))
+
+			ctx := metadata.AppendToOutgoingContext(context.Background(), app_testing.CheckHeader, ":authority="+tt.expectedAuthority)
+
+			err = app.callClientStream(ctx, m, [][]byte{msg})
+			require.NoError(t, err, "error executing callClientStream()")
+
+			if !strings.Contains(buf.String(), "authority header found") {
+				t.Errorf("expected no error, got %s", buf.String())
+			}
+		})
+	}
+}
+
+//test that the authority header is set correctly when calling a service with a custom authority
+func CheckStatsInAuthorityCalls() {
+	authority1 := "testservice1"
+	authority2 := "testservice2"
+	tests := []struct {
+		name              string
+		authority         string
+		target            string
+		expectedAuthority string
+	}{
+		{
+			name:              "defaultAuthority",
+			target:            app_testing.TestServerAddr(),
+			expectedAuthority: app_testing.TestServerAddr(),
+		},
+		{
+			name:              "customAuthorityInTarget",
+			target:            app_testing.TestServerAddr() + ",authority=" + authority1,
+			expectedAuthority: authority1,
+		},
+		{
+			name:              "customAuthorityArg",
+			target:            app_testing.TestServerAddr() + ",authority=" + authority1,
+			authority:         authority2,
+			expectedAuthority: authority2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			buf := &bytes.Buffer{}
+
+			app, err := newApp(&startOpts{
+				Target:        tt.target,
+				Deadline:      15,
+				Authority:     tt.authority,
+				IsInteractive: false,
+				w:             buf,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			m, ok := findMethod(t, app, "obsidian_client_cli.testing.TestService", "UnaryCall")
+			if !ok {
+				return
+			}
+
+			userId := int32(123)
+			userName := "testuser"
+
+			msgTmpl := `
+{
+  "user": { "id": %d, "name": "%s" }
+}
+`
+
+//test that checks the service method is called with the correct authority heade when the authority is set in the target service descriptor
+func findMethod(t *testing.T, app *app, service, method string) (*desc.MethodDescriptor, bool) {
+	t.Helper()
+
+	s, ok := app.descSource.FindSymbol(service)
+	if !ok {
+		t.Errorf("could not find service %q", service)
+		return nil, false
+	}
+
+	sd, ok := s.(*desc.ServiceDescriptor)
+	if !ok {
+		t.Errorf("symbol %q is not a service", service)
+		return nil, false
+	}
+
+	m, ok := sd.FindMethodByName(method)
+	if !ok {
+		t.Errorf("could not find method %q on service %q", method, service)
+		return nil, false
+	}
+
+	return m, true
+}
+
+
+func FindDiscoveryProbe()
+if (app, err := newApp(&startOpts{
+	Target:        app_testing.TestServerAddr(),
+	Deadline:      15,
+	IsInteractive: false,
+	Discover:      true,
+	Service:       "TestService",
+})
+
+buf := &bytes.Buffer{}
+app.w = buf
+
+if err != nil {
+	t.Error(err)
+	return)
+
+m, ok := findMethod(t, app, "obsidian_client_cli.testing.TestService", "UnaryCall")
+
+if !ok {
+	return
+}
+
+else {
+	t.Errorf("expected error, got %s", buf.String())
+}
+
+if !strings.Contains(buf.String(), "authority header not found") {
+	t.Errorf("expected error, got %s", buf.String())
+}
+
+else {
+	t.Errorf("expected no error, got %s", buf.String())
+}
+
+}
+
+
+
