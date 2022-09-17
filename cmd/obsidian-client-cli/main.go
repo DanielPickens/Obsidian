@@ -334,4 +334,132 @@ func parsehealtcmdmetrics(c *cli.Context) ([]string, error) {
 	return metrics, nil
 }
 
-func 
+func ReadParsedMessaged() ([]byte, error) {
+	var message []byte
+	s, err := os.Stdin.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	// only read from stdin if there is something to read
+	if s.Mode()&os.ModeNamedPipe != 0 {
+		bytes, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			return nil, err
+		}
+
+		message = bytes
+	}
+
+	return message, nil
+}
+
+func NewApp(opts *startOpts) (*App, error) {
+	if opts == nil {
+		return nil, errors.New("start opts is nil")
+	}
+
+	if opts.Target == "" {
+		return nil, errors.New("target is required")
+	}
+
+	if opts.Method == "" && !opts.Discover {
+		return nil, errors.New("method is required")
+	}
+
+	if opts.Service == "" && !opts.Discover {
+		return nil, errors.New("service is required")
+	}
+
+	if opts.IsInteractive {
+		if opts.Method == "" {
+			return nil, errors.New("method is required")
+		}
+
+		if opts.Service == "" {
+			return nil, errors.New("service is required")
+		}
+	}
+
+	a := &App{
+		opts:      opts,
+		formatter: NewFormatter(opts.OutFormat),
+	}
+
+	if err := a.init(); err != nil {
+		return nil, err
+	}
+
+	return a, nil
+}
+
+func (a *App) init() error {
+	if a.opts.Verbose {
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.WarnLevel)
+	}
+
+	if a.opts.InFormat == caller.Protobuf {
+		if len(a.opts.Protos) == 0 {
+			return errors.New("protobuf files are required")
+		}
+
+		if a.opts.Service == "" {
+			return errors.New("service is required")
+		}
+
+		if a.opts.Method == "" {
+			return errors.New("method is required")
+		}
+
+		var err error
+		a.proto, err = NewProto(a.opts.Protos, a.opts.ProtoImports)
+		if err != nil {
+			return err
+		}
+
+		a.protoMessage, err = a.proto.GetMessage(a.opts.Service, a.opts.Method)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (a *App) Start(message []byte) error {
+	if a.opts.Is 
+[...]
+if a.opts.IsInteractive {
+		return a.interactive()
+	}
+
+	if a.opts.Health {
+		return a.health()
+	}
+
+	if a.opts.Discover {
+		return a.discover()
+	}
+
+	return a.call(message)
+}
+
+func (a *App) Close() error {
+	if a.conn != nil {
+		return a.conn.Close()
+	}
+
+	return nil
+}
+
+
+func (a *App) Start(message []byte) error {
+	if a.opts.IsInteractive {
+		return a.startInteractive(message)
+	}
+
+	return a.start(message)
+}
+
