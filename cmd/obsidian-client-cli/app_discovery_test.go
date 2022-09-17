@@ -124,3 +124,4 @@ func TestDiscoverCommand_NoService_NoDiscover(t *testing.T) {
 	}
 }
 
+func Test

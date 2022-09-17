@@ -67,5 +67,43 @@ func TestInactiveServiceCallsReflect(t *testing.T) {
 		IsInteractive: false,
 		Protos:        []string{"../../testdata/test.proto"},
 		Service:       "TestService",
+
+
+
 	})
 }
+
+func TestActiveUnaryCallsReflect(t *testing.T){
+	runAppServiceCalls(t, &startOpts{
+		Target:        app_testing.TestServerReflectAddr(),
+		Deadline:      15,
+		IsInteractive: false,
+		Protos:        []string{"../../testdata/test.proto"},
+		Service:       "TestService",
+	
+	})
+}
+
+func TestActiveStreamCallsReflect(t *testing.T){
+	runAppServiceCalls(t, &startOpts{
+		Target:        app_testing.TestServerReflectAddr(),
+		Deadline:      15,
+		IsInteractive: false,
+		Protos:        []string{"../../testdata/test.proto"},
+		Service:       "TestService",
+		
+	})
+}
+
+func TestActiveStreamCallsNoReflect(t *testing.T){
+	runAppServiceCalls(t, &startOpts{
+		Target:        app_testing.TestServerNoReflectAddr(),
+		Deadline:      15,
+		IsInteractive: false,
+		Protos:        []string{"../../testdata/test.proto"},
+		Service:       "TestService",
+		
+	})
+}
+
+
