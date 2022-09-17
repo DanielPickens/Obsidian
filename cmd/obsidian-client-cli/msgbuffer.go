@@ -193,5 +193,14 @@ func protoString(messageDesc *desc.MessageDescriptor) string {
 	return str
 }
 
+func getMessagesInvalids(messages [][]byte) []string {
+	invalids := []string{}
+	for _, msg := range messages {
+		if err := validateJSON(msg); err != nil {
+			invalids = append(invalids, string(msg))
+		}
+	}
+	return invalids
+}
 
-
+func ()
