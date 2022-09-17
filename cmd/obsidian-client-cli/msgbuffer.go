@@ -203,4 +203,11 @@ func getMessagesInvalids(messages [][]byte) []string {
 	return invalids
 }
 
-func ()
+func WritetoMessages(messages [][]byte, w io.Writer) error {
+	for _, msg := range messages {
+		if _, err := w.Write(msg); err != nil {
+			return err
+		}
+	}
+	return nil
+}
