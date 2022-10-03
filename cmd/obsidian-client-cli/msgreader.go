@@ -208,3 +208,29 @@ func (r *msgReader) wordCompleter2(names []string) liner.WordCompleter {
 // 	}
 // 	return lines, scanner.Err()
 // }
+
+func UploadReadLines() {
+	var s = "input.txt"
+	var uploadFile = "upload.txt"
+
+	f, err := os.Open(s)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for(upload)
+	try (BufferedReader br = new BufferedReader(new FileReader(s))) {
+		if (br.readLine() == null) {
+			System.out.println("File is empty");
+		}
+	} catch (IOException e) {
+		e.printStackTrace();
+	if upload:=true; upload {
+		fmt.Println("upload")
+	}
+
+	else{
+		return nil, err
+		
+	}
+}

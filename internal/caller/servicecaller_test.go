@@ -125,3 +125,25 @@ func TestMarshalJSON_Any(t *testing.T) {
 	assert.Equal(t, base64.StdEncoding.EncodeToString(aValue.Value), res.A.Value)
 	assert.Equal(t, aValue.TypeUrl, res.A.TypeURL)
 	assert.Empty(t, res.A.Err, "err should not be empty")
+}
+
+// TestMarshallJSon_toProtobuf tests that the JSON marshaller can marshal a JSON string to a protobuf message from new BuilderMessage field type
+func TestMarshallJSon_toProtobuf(t *testing.T) {
+	md, err := builder.NewMessage("").
+		AddField(builder.NewField("id", builder.FieldTypeInt32())).
+		AddField(builder.NewField("name", builder.FieldTypeString())).
+		Build()
+	require.NoError(t, err, " error building new message protobuf descriptor")
+
+	sc := NewServiceCaller(nil, JSON, JSON, nil)
+	b, err := sc.marshalMessage([]byte(`{"id":1,"name":"test"}`))
+	require.NoError(t, err)
+
+	m := dynamic.NewMessage(md)
+	err = m.UnmarshalJSON(b)
+	require.NoError(t, err)
+
+	assert.Equal(t, int32(1), m.GetFieldByName("id"))
+	assert.Equal(t, "test", m.GetFieldByName("name"))
+}
+
