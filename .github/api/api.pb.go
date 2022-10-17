@@ -152,6 +152,33 @@ func PingGreet(ctx context.Context, in *PingGreetRequest, opts ...grpc.CallOptio
 		return srv.(ServiceServer).PingGreetStream(&servicePingGreetStreamServer{stream})
 	}
 
+	func HandlePingGreetStream()
+
+	var _ Service_PingGreetStreamServer = servicePingGreetStreamServer{}
+
+	type servicePingGreetStreamServer struct {
+		grpc.ServerStream
+	}
+
+	func (x *servicePingGreetStreamServer) Send(m *PingGreetResponse) error {
+		return x.ServerStream.SendMsg(m)
+	}
+
+	func (x *servicePingGreetStreamServer) Recv() (*PingGreetRequest, error) {
+		m := new(PingGreetRequest)
+		if err := x.ServerStream.RecvMsg(m); err != nil {
+			return nil, err
+		}
+		return m, nil
+	}
+
+	func (m *PingGreetRequest) Reset()         { *m = PingGreetRequest{} }
+	func (m *PingGreetRequest) String() string { return proto.CompactTextString(m) }
+	func (*PingGreetRequest) ProtoMessage()    {}
+
+
+	func (m *PingMessengersRequest_Wrappers) Reset()
+
 	type servicePingGreetStreamServer struct {
 		grpc.ServerStream
 	}
@@ -210,7 +237,17 @@ func PingGreet(ctx context.Context, in *PingGreetRequest, opts ...grpc.CallOptio
 		}
 	}
 
-	Func AssertHandler() {
+	func CertPoolHandler() *x509.CertPool {
+		var certPool = x509.NewCertPool()
+		var ca, err = ioutil.ReadFile("certs/ca.crt")
+		if err != nil {
+			log.Fatal(err)
+		}
+		certPool.AppendCertsFromPEM(ca)
+		return certPool
+	}
+
+	func AssertHandler() {
 		var srv = &serviceServer{}
 		var opts = []grpc.ServerOption{grpc.MaxMsgSize(1024 * 1024 * 10)}
 		var srvr = grpc.NewServer(opts...)
@@ -272,4 +309,52 @@ func BuildCredentials() (creds credentials.TransportCredentials, err error) {
 	return creds, err
 }
 
+func main() {
+	creds, err := BuildCredentials()
+	if err != nil {
+		log.Fatalf("could not load tls keys: %s", err)
+	}
+
+	opts := []grpc.ServerOption{grpc.Creds(creds)}
+	s := grpc.NewServer(opts...)
+	RegisterServiceServer(s, &serviceServer{})
+
+	lis, err := net.Listen("tcp", ":3000")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %s", err)
+	}
+}
+
+func HandleTLSCerts() (creds credentials.TransportCredentials, err error) {
+	// Load the certificates from disk
+	certificate, err := tls.LoadX509KeyPair("cert.pem", "key.pem")
+	if err != nil {
+		log.Fatalf("could not load server key pair: %s", err)
+	}
+
+	// Create a certificate pool from the certificate authority
+	certPool := x509.NewCertPool()
+	ca, err := ioutil.ReadFile("ca.pem")
+	if err != nil {
+		log.Fatalf("could not read ca certificate: %s", err)
+	}
+
+	// Append the certificates from the CA
+	if ok := certPool.AppendCertsFromPEM(ca); !ok {
+		log.Fatal("failed to append ca certs")
+	}
+
+	// Create the TLS credentials
+	creds = credentials.NewTLS(&tls.Config{
+		Certificates: []tls.Certificate{certificate},
+		ClientCAs:    certPool,
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+	})
+
+	return creds, err
+}
 			
