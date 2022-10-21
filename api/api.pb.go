@@ -1,12 +1,10 @@
 package api
 
 import (
-	proto "github.com/golang/protobuf/proto"
-	context "golang.org/x/net/context"
-	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
 	math "math"
+	"net/http"
+
+	proto "github.com/golang/protobuf/proto"
 	any "github.com/golang/protobuf/ptypes/any"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
@@ -18,7 +16,10 @@ import (
 	_ "github.com/jhump/protoreflect/dynamic/internal/impl/iface"
 	_ "github.com/jhump/protoreflect/dynamic/internal/impl/iface/impl"
 	_ "github.com/jhump/protoreflect/dynamic/internal/impl/iface/impl/iface"
-
+	context "golang.org/x/net/context"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 )
 
 type Empty = empty.Empty
@@ -237,12 +238,46 @@ func PingGreet(ctx context.Context, in *PingGreetRequest, opts ...grpc.CallOptio
 		}
 	}
 
+	func SendHandlerRequest() {
+		var opts = []grpc.DialOption{grpc.WithInsecure()}
+		var conn, err = grpc.Dial("localhost:3000", opts...)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := conn.Close(); err != nil {
+			http.NotFound(w, r)
+			return
+		}
+	}
+
+		var client = NewServiceClient(conn)
+		var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		var req = &PingGreetRequest{Message: "hello"}
+		var res, err = client.PingGreet(ctx, req)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(res.Message)
+	}
 	func CertPoolHandler() *x509.CertPool {
 		var certPool = x509.NewCertPool()
 		var ca, err = ioutil.ReadFile("certs/ca.crt")
 		if err != nil {
 			log.Fatal(err)
 		}
+		certPool.AppendCertsFromPEM(ca)
+		return certPool
+	}
+
+	func AggregateCertPools() *x509.CertPool {
+		var certPool = x509.NewCertPool()
+		var ca, err = ioutil.ReadFile("certs/ca.crt")
+		if err != nil {
+			log.Fatal(err)
+		}
+		
 		certPool.AppendCertsFromPEM(ca)
 		return certPool
 	}

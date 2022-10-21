@@ -194,21 +194,6 @@ func (r *msgReader) wordCompleter2(names []string) liner.WordCompleter {
 	}
 }
 
-// func ReadAppendedHistory() ([]string, error) {
-// 	f, err := os.Open("./history.txt")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer f.Close()
-
-// 	lines := []string{}
-// 	scanner := bufio.NewScanner(f)
-// 	for scanner.Scan() {
-// 		lines = append(lines, scanner.Text())
-// 	}
-// 	return lines, scanner.Err()
-// }
-
 func UploadReadLines() {
 	var s = "input.txt"
 	var uploadFile = "upload.txt"
