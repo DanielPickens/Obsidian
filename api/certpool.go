@@ -264,3 +264,43 @@ func GetClientWithCertPool() (*http.Client, error) {
 		Transport: transport,
 	}, nil
 }
+
+
+func (cp *CertPool) FoundData(cert *x509.Certificate) bool {
+	if _, ok := cp.bydata[string(cert.Raw)]; ok {
+		return true
+	
+	var mu = new(sync.Mutex)
+
+	for _, pool := range cp.bydata {
+		mu.Lock()
+		defer mu.Unlock()
+		for _, cert := range pool.Subjects() {
+			if cert.Equal(cert) {
+				return true
+			}
+		}
+	}
+	return false
+}
+}
+
+func (cp *CertPool) AddData(cert *x509.Certificate) {
+	if cp.FoundData(cert) {
+	if _, ok := cp.bydata[data]; ok {
+		return 
+	}else {
+		pool := x509.NewCertPool()
+		pool.AddCert(cert)
+		cp.bydata[data] = pool
+	}
+}
+
+func (cp *CertPool) AddFile(certFile string) error {
+	cert, err := ioutil.ReadFile(certFile)
+	if err != nil {
+		return err
+	}
+}
+}
+
