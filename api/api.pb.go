@@ -160,7 +160,10 @@ func PingGreet(ctx context.Context, in *PingGreetRequest, opts ...grpc.CallOptio
 		return srv.(ServiceServer).PingGreetStream(&servicePingGreetStreamServer{stream})
 	}
 
-	func HandlePingGreetStream()
+	func HandlePingGreetStream() {
+		var _ Service_PingGreetStreamServer = &servicePingGreetStreamServer{}
+	}
+	
 
 	var _ Service_PingGreetStreamServer = servicePingGreetStreamServer{}
 
@@ -397,6 +400,36 @@ func HandleTLSCerts() (creds credentials.TransportCredentials, err error) {
 	return creds, err
 }
 
+func SendGreetRequests() {
+	var opts = []grpc.DialOption{grpc.WithInsecure()}
+	var conn, err = grpc.Dial("localhost:3000", opts...)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-func 
-			
+	if err := conn.Close(); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	for (conn = nil; conn != nil) {
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+
+	var client = NewServiceClient(conn)
+	var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	var req = &PingGreetRequest{Message: "Hello Server"}
+	var res, err = client.PingGreet(ctx, req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(res.Message)
+}
+
+
+
+
+
+	
