@@ -70,6 +70,13 @@ type serviceClient struct {
 	
 }
 
+type serviceServer struct {
+	var _ Service_PingGreetStreamServer = &servicePingGreetStreamServer{}
+	
+}
+
+
+
 func NewServiceClient(cc *grpc.ClientConn)
 
 func (c *serviceClient) PingMessengers(ctx context.Context, in *PingMessengersRequest, opts ...grpc.CallOption) (*PingMessengersResponse, error) {
@@ -308,12 +315,9 @@ func PingGreet(ctx context.Context, in *PingGreetRequest, opts ...grpc.CallOptio
 			}
 
 		}
-
+		if err := srvr.Serve(l); err != nil {
+		log.Fatal(err)
 	}
-
-func main() {
-	RegisterSrvHandler()
-}
 
 func BuildCredentials() (creds credentials.TransportCredentials, err error) {
 	// Load the certificates from disk
@@ -392,4 +396,7 @@ func HandleTLSCerts() (creds credentials.TransportCredentials, err error) {
 
 	return creds, err
 }
+
+
+func 
 			
