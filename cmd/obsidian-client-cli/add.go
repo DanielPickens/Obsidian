@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"io/ioutil"
 	"os"
 	"strings"
 	"text/template"
@@ -75,4 +76,32 @@ func add(c *cli.Context) error {
 		return err
 	}
 	return nil
+}
+
+func GenerateCueFile(cuefile, protofile, protoimportpath string) (string, error) {
+	proto, err := os.Open(protofile)
+	if err != nil {
+		return "", err
+	}
+	defer proto.Close()
+
+	// Read the proto file
+	protocontent, err := ioutil.ReadAll(proto)
+	if err != nil {
+		return "", err
+	}
+
+	// Generate the cue file
+	cue, err := os.Create(cuefile)
+	if err != nil {
+		return "", err
+	}
+	defer cue.Close()
+
+	// Read the proto file
+	cuecontent, err := ioutil.ReadAll(cue)
+	if err != nil {
+		return "", err
+	}
+	return string(cuecontent), nil
 }
