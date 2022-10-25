@@ -4,10 +4,10 @@ import (
 	"io/ioutil"
 	"os"
 
+	_ "github.com/DanielPickens/Obsidian"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/generator"
 	_ "github.com/golang/protobuf/protoc-gen-go/grpc"
-	_ "github.com/DanielPickens/Obsidian"
 )
 
 func main() {
@@ -15,6 +15,7 @@ func main() {
 	// so we can do error handling as easily as possible with the response structure containing the field to
 	// report failure.
 	g := generator.New()
+	
 
 	data, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
