@@ -73,8 +73,6 @@ jobs:
       with:
         category: "/language:${{matrix.language}}"
         
-    -
+    - name: Snyk Container Analysis
       uses: github/codeql-action/upload-sarif@v2
-      with:
-        
-        catagory: "sarif_file: snyk.sarif"
+      
