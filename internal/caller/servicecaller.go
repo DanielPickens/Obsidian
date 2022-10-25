@@ -227,3 +227,9 @@ func (sc *ServiceCaller) unmarshalMessage(msg *dynamic.Message, b []byte) error 
 
 	return msg.UnmarshalJSON(b)
 }
+
+type Resolver struct {
+	fdescCache *FileDescCache
+	srvDesc    *desc.ServiceDescriptor
+	
+}

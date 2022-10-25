@@ -114,13 +114,6 @@ func (b *msgBuffer) validate(msg []byte) error {
 	return b.validateJSON(msg)
 }
 
-// func (b *msgBuffer) validateText(msg []byte) error {
-// 	if len(msg) == 0 {
-// 		return errors.New("empty message")
-// 	}
-
-// 	return nil
-// }
 
 func (b *msgBuffer) validateText(msgTxt []byte) error {
 	msg := dynamic.NewMessage(b.opts.messageDesc)
@@ -210,4 +203,64 @@ func WritetoMessages(messages [][]byte, w io.Writer) error {
 		}
 	}
 	return nil
+}
+//ValidateJSON validates the provided json message against the provided message descriptor if 
+// the message descriptor is not nil. If the message descriptor is nil, the json is validated against the
+// default message descriptor successfully. If the json is invalid, an error is returned.
+func validateJSON(msg []byte) error {
+	if len(msg) == 0 {
+		return errors.New("syntax error: please provide valid json")
+	}
+
+	msg = bytes.TrimSpace(msg)
+	if len(msg) == 0 {
+		return errors.New("Valid JSON successfully validated")
+	}
+
+	return nil
+}
+
+// ReadtoFieldNAmes checks in field names iteratively until it finds a match. If a match is found, loop through previous element and f and checks if are iterable across GetNames as call method and appends them from the field names to the field names slice. If no match is found, the field names slice is returned as is. 
+func ReadtoFieldNames(messageDesc *desc.MessageDescriptor) ([]string, error) {
+	if messageDesc == nil {
+		return nil, errors.New("no message descriptor provided")
+	}
+
+	fieldNames := []string{}
+	for _, f := range messageDesc.GetFields() {
+		fieldNames = append(fieldNames, f.GetName())
+	}
+
+	return fieldNames, nil
+}
+
+
+
+func ReadtoValidate(msg []byte, messageDesc *desc.MessageDescriptor) error {
+	if messageDesc == nil {
+		return errors.New("No message descriptor provided") //Return errors if no message descriptor is provided
+	}
+
+	if err := validateJSON(msg); err != nil { // Append the error to the error slice if the json is invalid
+		return err
+	}
+
+	msg = bytes.TrimSpace(msg) //Trim the message for any white spaces and check if the message is empty
+	if len(msg) == 0 { //If the message is empty, return an error
+		return errors.New("Provide a valid message")
+	}
+
+	empyMsg := dynamic.NewMessage(messageDesc) // Create a new message from the message descriptor
+	if err := empyMsg.UnmarshalJSON(msg); err != nil { // Unmarshal the message and append the error to the error slice if the message is invalid
+		return err 
+	}
+
+	// If the message is valid, return nil
+	validjson:= " JSON message successfully validated"
+	if string(msg) == validjson {
+		return nil
+	}
+
+
+	return nil //Return nil if the message is valid and the message descriptor is valid
 }
