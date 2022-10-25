@@ -72,3 +72,9 @@ jobs:
       uses: github/codeql-action/analyze@v2
       with:
         category: "/language:${{matrix.language}}"
+        
+    -
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        
+        catagory: "sarif_file: snyk.sarif"
