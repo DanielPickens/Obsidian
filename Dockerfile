@@ -1,6 +1,6 @@
 FROM golang:1.9-alpine AS build_base
 
-RUN apk add --no-cache git
+
 
 # Set the Current Working Directory inside the container
 WORKDIR /Obsidian
@@ -19,7 +19,7 @@ COPY . .
 
 # Start fresh from a smaller image
 FROM alpine:3.9 
-RUN apk add ca-certificates
+
 
 
 # This container exposes port 8080 to the outside world
