@@ -35,7 +35,7 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
-// RunD is a convenience function that runs the requested cmd and returns the error.
+// runD is a convenience function that runs the requested cmd and returns the error.
 func runD(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
 		return fmt.Errorf("missing method name")
@@ -187,10 +187,10 @@ func runG(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("found address")
 	}
 
-	// defer func() {
-	// 	if err := recover(); err != nil {
-	// 		fmt.Println(err)
-	// 	}
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
 	conn, err := grpc.Dial(*addr, grpc.WithInsecure())
 	if err != nil {
 		return err
@@ -234,6 +234,62 @@ func runG(cmd *cobra.Command, args []string) error {
 	return nil
 	
 	}
+}
+
+func RunI(
+	method,
+	inT string,
+	newClient func(*grpc.ClientConn) interface{},
+) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		conn, err := dial(*addr)
+		if err != nil {
+			return err
+		}
+		defer conn.Close()
+		c := newClient(conn)
+		cv := reflect.ValueOf(c)
+		method := cv.MethodByName(method)
+		if method.IsValid() {
+
+			in := reflect.New(proto.MessageType(inT).Elem()).Interface()
+			if len(*input) > 0 {
+				if err := json.Unmarshal([]byte(*input), in); err != nil {
+					return err
+				}
+			}
+
+			result := method.Call([]reflect.Value{
+				reflect.ValueOf(context.Background()),
+				reflect.ValueOf(in),
+			})
+			if len(result) != 2 {
+				panic("Return 2 values (error and result)")
+			}
+			if !result[1].IsNil() {
+				return result[1].Interface().(error)
+			}
+			out := result[0].Interface()
+			data, err := json.MarshalIndent(out, "", "    ")
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(data))
+		}
+
+		return nil
+	}
+     var (
+		addr  = flag.String("addr", "localhost:50051", "address of the server")
+		input = flag.String("input", "", "input to the method")
+	)
+	func main() {
+		flag.Parse()
+		if err := RunI("Get", "obsidian.GetRequest", NewObsidianClient)(nil, flag.Args()); err != nil {
+			log.Fatal(err)
+		}
+	}
+}
 
 
 
@@ -291,33 +347,39 @@ func RunH(
 
 // function dialed makes a connection to the server and returns a client connection to the server if grpc
 // credentials are not provided, it returns an error if credentials are provided and the connection is not established.
-// func dialed(addr string) (*grpc.ClientConn, error) {
-// 	var opts []grpc.DialOption
+func dialed(addr string) (*grpc.ClientConn, error) {
+	var opts []grpc.DialOption
 	
-// 	runtime := os.Getenv("RUNTIME")
-// 	if runtime == "k8s" {
-// 		opts = append(opts, grpc.WithInsecure())
-// 	} else {
-// 		creds, err := credentials.NewClientTLSFromFile(*certFile, "")
-// 	if *tls {
-// 		creds, err := credentials.NewClientTLSFromFile(*certFile, *serverNameOverride)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		opts = append(opts, grpc.WithTransportCredentials(creds))
-// 	} else {
-// 		opts = append(opts, grpc.WithInsecure())
-// 	}
-// 	opts = append(opts, grpc.WithBlock())
-// 	conn, err := grpc.Dial(addr, opts...)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return conn, nil
-// }
-//func dial connects to the server using a secure transport and insecure and then returns a grpc.ClientConn.
-// func dial(addr string) (*grpc.ClientConn, error) {
-// 	var opts []grpc.DialOption
-// 	opts = append(opts, grpc.WithInsecure())
-// 	return grpc.Dial(addr, opts...)  
-// 
+	runtime := os.Getenv("RUNTIME")
+	if runtime == "k8s" {
+		opts = append(opts, grpc.WithInsecure())
+	} else {
+		creds, err := credentials.NewClientTLSFromFile(*certFile, "")
+	if *tls {
+		creds, err := credentials.NewClientTLSFromFile(*certFile, *serverNameOverride)
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+	} else {
+		opts = append(opts, grpc.WithInsecure())
+	}
+	opts = append(opts, grpc.WithBlock())
+	conn, err := grpc.Dial(addr, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
+}
+	const (
+		defaultAddr = "localhost:50051"
+		for defaultAddr:= "localhost:50051"
+	)
+	
+	func main() {
+		flag.Parse()
+		if err := RunH("Get", NewObsidianClient, NewObsidianServer, proto.Marshal, proto.Unmarshal)(nil, flag.Args()); err != nil {
+			log.Fatal(err)
+		}
+	}
+}
