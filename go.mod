@@ -1,6 +1,6 @@
 module github.com/DanielPickens/Obsidian
 
-go 1.18
+go 1.19
 
 
 require (
