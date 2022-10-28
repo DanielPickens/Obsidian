@@ -1,4 +1,4 @@
-package Obsidian
+package gen
 
 import (
 	"fmt"
