@@ -1,25 +1,24 @@
 package pd
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
-
 import (
+	fmt "fmt"
+
+	proto "github.com/golang/protobuf/proto"
+
+	math "math"
+
 	context "golang.org/x/net/context"
+
+	"github.com/spf13/cobra"
 	grpc "google.golang.org/grpc"
 )
 
 // Obsidian imports
-import (
-	"github.com/spf13/cobra"
-	"github.com/DanielPickens/Obsidian"
-)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-
 
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
@@ -97,11 +96,11 @@ func init() {
 var _ context.Context
 var _ grpc.ClientConn
 
-// This is a compile-time assertion variable to ensure that the generated file 
+// This is a compile-time assertion variable to ensure that the generated file
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// the Client API for Example service 
+// the Client API for Example service
 
 type ExampleClient interface {
 	// GetNumber returns a number
@@ -233,6 +232,10 @@ var _Example_EchoCmd = &cobra.Command{
 			return NewExampleClient(c)
 		},
 	),
+}
+var Obsidian = &cobra.Command{
+	Use:   "obsidian",
+	Short: "Obsidian is a CLI for gRPC services.",
 }
 
 // Register commands with the root command and service command
