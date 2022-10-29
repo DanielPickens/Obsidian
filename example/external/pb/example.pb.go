@@ -14,6 +14,11 @@ import (
 )
 
 // Obsidian imports
+import (
+	"github.com/DanielPickens/Obsidian"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

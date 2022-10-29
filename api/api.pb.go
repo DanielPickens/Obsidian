@@ -49,7 +49,9 @@ type ServiceClient interface {
 type ServiceServer interface {
 	PingMessengers(context.Context, *PingMessengersRequest) (*PingMessengersResponse, error)
 
-	_; ServiceServer = (*serviceServer)(nil)
+	PingGreet(context.Context, *PingGreetRequest) (*PingGreetResponse, error)
+	PingGreetStream(*PingGreetRequest, Service_PingGreetStreamServer) error
+
 }
 
 func RegisterServiceServer(s *grpc.Server, srv ServiceServer) {
@@ -59,20 +61,15 @@ func RegisterServiceServer(s *grpc.Server, srv ServiceServer) {
 		return
 	}
 	s.RegisterService(&_Service_serviceDesc, srv)
-	else {
-		return
-	}
 }
+
+
 
 type serviceClient struct {
 	cc *grpc.ClientConn
 	
 }
 
-type serviceServer struct {
-	var _ Service_PingGreetStreamServer = &servicePingGreetStreamServer{}
-	
-}
 
 
 
@@ -430,7 +427,7 @@ func SendGreetRequests() {
 	log.Println(res.Message)
 }
 
-
+}
 
 
 
