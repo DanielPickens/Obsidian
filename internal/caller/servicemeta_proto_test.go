@@ -5,10 +5,14 @@ import (
 	"testing"
 )
 
-var(
-	isValidPath: func(string) bool = func(string) bool { return true }
+// var (
+// 	isValidPath = []string{
+// 		"/internal/caller/servicemeta_proto_test.go",
+// 		"/internal/caller/servicemeta_proto_test.go:123",
+// 		"/internal/caller/servicemeta_proto_test.go:123:456",
+// 	}
+// )
 
-)
 func TestMetaDataListSingleFile(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -143,7 +147,7 @@ func TestMetaDataListInvalidPath(t *testing.T) {
 	_, err := svcMeta.GetServiceMetaDataList(context.Background())
 	if err == nil {
 		t.Error("expected error, got nil")
-		return 
+		return
 	}
 }
 
@@ -152,14 +156,14 @@ func TestMetaDataListValidPath(t *testing.T) {
 	_, err := svcMeta.GetServiceMetaDataList(context.Background())
 	if err != nil {
 		t.Error(err)
-		return 
+		return
 	}
 
 	svcMeta = NewServiceMetadataProto([]string{"../../testdata/testapi/multiple"}, nil)
 	_, err = svcMeta.GetServiceMetaDataList(context.Background())
 	if err != nil {
 		t.Error(err)
-		return 
+		return
 	}
 
 }

@@ -56,6 +56,16 @@ type ServiceServer interface {
 
 }
 
+type Service_PingGreetStreamServer interface {
+	Send(*PingGreetResponse) error
+	Recv() (*PingGreetRequest, error)
+	grpc.ServerStream
+}
+
+type srv interface {
+	ServiceServer
+}	
+
 func RegisterServiceServer(s *grpc.Server, srv ServiceServer) {
 
 	var _ ServiceServer = srv
@@ -137,11 +147,16 @@ func PingGreet(ctx context.Context, in *PingGreetRequest, opts ...grpc.CallOptio
 	}
 	var _ ServiceServer = (*serviceServer)(nil)
 	var _ ServiceClient = (*serviceClient)(nil)
+	var _ Service_PingGreetStreamServer = (*servicePingGreetStreamServer)(nil)
+	var _ Service_PingGreetStreamClient = (*servicePingGreetStreamClient)(nil)
 
-func _ServicePingHandler(srv interface{}, ctx context.Context) (interface{}, error) { *m = PingMessengersRequest_Wrappers{} }
-		return m, nil
-	}
-	return nil, status.Errorf(codes.InvalidArgument, "type %T is not a valid type for message", m)
+}
+
+
+
+func ServicePingHandler(srv interface{}, ctx context.Context) (interface{}, error) { *m = PingMessengersRequest_Wrappers{} }
+		
+
 
 func _Service_PingGreet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
 	var in PingGreetRequest
@@ -168,6 +183,7 @@ func _Service_PingMessengers_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	return interceptor(ctx, in, info, handler)
 }
+
 
 func _Service_PingGreet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(PingGreetRequest)
@@ -206,12 +222,12 @@ func _Service_PingGreetDesc() *grpc.MethodDesc {
 	}
 }
 
-func _ Service_PingMessengersDesc() *grpc.MethodDesc {
-	return &grpc.MethodDesc{
-		MethodName: "PingMessengers",
-		Handler:    _Service_PingMessengers_Handler,
-	}
-}
+// func _ Service_PingMessengersDesc() *grpc.MethodDesc {
+// 	return &grpc.MethodDesc{
+// 		MethodName: "PingMessengers",
+// 		Handler:    _Service_PingMessengers_Handler,
+// 	}
+// }
 
 
 
@@ -249,9 +265,6 @@ func _Service_PingGreetStream_Handler(srv interface{}, stream grpc.ServerStream)
 
 	func (m *PingMessengersRequest_Wrappers) Reset()
 
-	type servicePingGreetStreamServer struct {
-		grpc.ServerStream
-	}
 
 	func (x *servicePingGreetStreamServer) Send(m *PingGreetResponse) error {
 		return x.ServerStream.SendMsg(m)
@@ -487,7 +500,7 @@ func SendGreetRequests() {
 	log.Println(res.Message)
 }
 
-}
+
 
 
 

@@ -5,8 +5,8 @@ go 1.19
 require (
 	github.com/ArthurHlt/go-eureka-client v1.1.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/DanielPickens/Obsidian/internal/rpc v0.0.0-20210811194844-1c0c2b1c1c0a
-	github.com/DanielPickens/Obsidian v0.0.0-20210811194844-1c0c2b1c1c0a
+	github.com/DanielPickens/Obsidian/internal/rpc v0.0.0
+	github.com/DanielPickens/Obsidian v0.0.0
 	
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect

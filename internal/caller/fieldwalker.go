@@ -47,6 +47,15 @@ func (fw *FieldWalker) WalkMaps(md *desc.MessageDescriptor, walkFn func(*desc.Fi
 	if md == nil {
 		return
 	}
+	var GetMapType func(*desc.FieldDescriptor) *desc.FieldDescriptor
+	GetMapType = func(f *desc.FieldDescriptor) *desc.FieldDescriptor {
+		if f.GetMessageType() != nil {
+			for _, f := range f.GetMessageType().GetFields() {
+				if f.GetMessageType() != nil {
+					return GetMapType(f)
+				}
+				return f
+			}
 	if _, ok := fw.processed[md.GetName()]; ok {
 		return
 	}
@@ -59,7 +68,7 @@ func (fw *FieldWalker) WalkMaps(md *desc.MessageDescriptor, walkFn func(*desc.Fi
 	}
 }
 
-func (fw *FieldWalker) WalkOneOfs(md *desc.MessageDescriptor, walkFn func(*desc.OneOfDescriptor)) {
+func (fw *FieldWalker) WalkOneOfs(md *desc.MessageDescriptor, walkFn, func(*desc.OneOfDescriptor))  {
 	if md == nil {
 		return
 	}
