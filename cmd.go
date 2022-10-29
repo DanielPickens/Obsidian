@@ -373,7 +373,11 @@ func dialed(addr string) (*grpc.ClientConn, error) {
 		creds, err := credentials.NewClientTLSFromFile(*certFile, *serverNameOverride)
 		if err != nil {
 			return nil, err
+
+		for _, opt := range opts {
+			opts = append(opts, opt)
 		}
+
 		opts = append(opts, grpc.WithTransportCredentials(creds))
 	} else {
 		opts = append(opts, grpc.WithInsecure())
@@ -383,8 +387,6 @@ func dialed(addr string) (*grpc.ClientConn, error) {
 		if err != nil {
 			return nil, err
 		}
-		return conn, nil
 	}
-	return nil, errors.New("no valid dial options")
-}
+	return conn, nil
 

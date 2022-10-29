@@ -41,7 +41,7 @@ type server struct{}
 
 // GetNumber returns a number as a response to the request then returns an error if the request is invalid if
 // the request is invalid and the error is returned.
-func (s *server) GetNumber(ctx context.Context, in *pb.Empty) (*pb.Number, error) {
+func (s *server) GetNumber(ctx, context.Context, in *pb.Empty) (*pb.Number, error) {
 	
 	log.Println("GetNumber")
 	return &pb.Number{Value: 42}, nil
