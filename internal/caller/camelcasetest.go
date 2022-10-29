@@ -40,9 +40,13 @@ func TestToUpperCamelCase(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			res := toUpperCamelCase(tt.text)
+		Run(tt.name, func(t *testing.T) {
+			if res := toUpperCamelCase(tt.text); res != tt.expected {
 			assert.Equal(t, tt.expected, res)
-		})
+			}
+		}),
 	}
 }
+
+
+	
