@@ -44,13 +44,12 @@ type PingMessengersRequest struct {
 
 type ServiceClient interface {
 	PingMessengers(ctx context.Context, in *PingMessengersRequest, opts ...grpc.CallOption) (*PingMessengersResponse, error)
-
-	var _ ServiceClient = (*serviceClient)(nil)
+}
 
 type ServiceServer interface {
 	PingMessengers(context.Context, *PingMessengersRequest) (*PingMessengersResponse, error)
 
-	var _ ServiceServer = (*serviceServer)(nil)
+	_; ServiceServer = (*serviceServer)(nil)
 }
 
 func RegisterServiceServer(s *grpc.Server, srv ServiceServer) {
@@ -77,7 +76,10 @@ type serviceServer struct {
 
 
 
-func NewServiceClient(cc *grpc.ClientConn)
+func NewServiceClient(cc *grpc.ClientConn) {
+
+	return &serviceClient{cc}
+}
 
 func (c *serviceClient) PingMessengers(ctx context.Context, in *PingMessengersRequest, opts ...grpc.CallOption) (*PingMessengersResponse, error) {
 
@@ -137,7 +139,7 @@ func PingGreet(ctx context.Context, in *PingGreetRequest, opts ...grpc.CallOptio
 	var _ ServiceServer = (*serviceServer)(nil)
 	var _ ServiceClient = (*serviceClient)(nil)
 
-	func _Service_PingGreet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Service_PingGreet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 		in:= new(PingGreetRequest)
 		if (err := dec(in)) != nil {
 			return nil, err
@@ -156,7 +158,7 @@ func PingGreet(ctx context.Context, in *PingGreetRequest, opts ...grpc.CallOptio
 	}
 
 
-	func _Service_PingGreetStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Service_PingGreetStream_Handler(srv interface{}, stream grpc.ServerStream) error {
 		return srv.(ServiceServer).PingGreetStream(&servicePingGreetStreamServer{stream})
 	}
 

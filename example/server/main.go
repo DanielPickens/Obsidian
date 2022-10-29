@@ -14,11 +14,34 @@ const (
 	port = ":50051"
 )
 
+const (
+	ctx = context.Background()
+
+
+)
+
+var _ = Describe("Server", func() {
+	var (
+		srv *grpc.Server
+	)
+	var (
+		pb = &pb.Obsidian{}
+
+	)
+
+	BeforeEach(func() {
+		srv = grpc.NewServer()
+		pb.RegisterObsidianServer(srv, &server{})
+		reflection.Register(srv)
+	})
+
+
 type server struct{}
 
 // GetNumber returns a number as a response to the request then returns an error if the request is invalid if
 // the request is invalid and the error is returned.
 func (s *server) GetNumber(ctx context.Context, in *pb.Empty) (*pb.Number, error) {
+	
 	log.Println("GetNumber")
 	return &pb.Number{Value: 42}, nil
 }

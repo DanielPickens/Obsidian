@@ -1,4 +1,4 @@
-package testserver
+package main
 
 //go:generate protoc --go_out=plugins=grpc:./ test.proto
 //go:generate protoc --descriptor_set_out=./test.protoset test.proto
@@ -259,11 +259,11 @@ func (TestServer) QuarterDuplexCall(str TestService_QuarterDuplexCallServer) err
 		return status.Error(failEarly, "fail")
 	}
 
-	// if failEarly == codes.OK {
-	// 	for {
-	// 		if str.Context().Err() != nil {
-	// 			return str.Context().Err()
-	// 		}
+	if failEarly == codes.OK {
+		for {
+			if str.Context().Err() != nil {
+				return str.Context().Err()
+			}
 
 	rsp := &StreamingOutputCallResponse{Payload: &Payload{}}
 	for {
@@ -373,4 +373,31 @@ func toCode(vals []string) codes.Code {
 	return codes.Code(i)
 }
 
-var _ TestServiceServer = TestServer{}
+func toMetadatReadWriter(vals []string) grpcurl.MetadataReadWriter {
+	if len(vals) == 0 {
+		return nil
+	}
+	return grpcurl.MetadataFromHeaders(grpcurl.MetadataFromHeaders(vals))
+}
+
+
+// var _ TestServiceServer = TestServer{}
+
+// func main() {
+// 	flag.Parse()
+// 	lis, err := net.Listen("tcp", *listenAddr)
+// 	if err != nil {
+// 		log.Fatalf("failed to listen: %v", err)
+// 	}
+// 	v:= reflect.ValueOf(TestServer{})
+// 	for v = v.Elem(); v.Kind() == reflect.Ptr; v = v.Elem() {}
+// 	if v.Kind() != reflect.Struct {
+// 		log.Fatalf("TestServer is not a struct")
+// 	}
+// 	s := grpc.NewServer()
+// 	RegisterTestServiceServer(s, TestServer{})
+// 	if err := s.Serve(lis); err != nil {
+// 		log.Fatalf("failed to serve: %v", err)
+// 	}
+// }
+
