@@ -204,3 +204,4 @@ func TestDurationNonPrimativeDataType(t *testing.T) {
 		)
 	}
 }
+

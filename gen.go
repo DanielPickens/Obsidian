@@ -1,4 +1,4 @@
-package gen
+package main
 
 import (
 	"fmt"
@@ -107,7 +107,7 @@ func upperFirst(s string) string {
 	return string(unicode.ToUpper(r)) + s[n:]
 }
 func toTypeName(t string) string {
-	
+
 	return strings.TrimPrefix(t, ".")
 }
 
@@ -119,11 +119,9 @@ func lowerFirst(s string) string {
 	return string(unicode.ToLower(r)) + s[n:]
 }
 
-
 func GenerateExports(gen *generator.Generator) {
 	o := &Obsidian{gen: gen}
 	o.Init(gen)
 	o.GenerateImports(gen.Request.FileToGenerate[0])
 	o.Generate(gen.Request.FileToGenerate[0])
 }
-
