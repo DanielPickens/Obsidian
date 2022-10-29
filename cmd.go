@@ -232,8 +232,7 @@ func runG(cmd *cobra.Command, args []string) error {
 	fmt.Println(string(output))
 
 	return nil
-	
-	}
+	}()
 }
 
 func RunI(
@@ -283,13 +282,19 @@ func RunI(
 		addr  = flag.String("addr", "localhost:50051", "address of the server")
 		input = flag.String("input", "", "input to the method")
 	)
+	flag.Parse()
+	if err := RunI("Get", "obsidian.GetRequest", NewObsidianClient)(nil, flag.Args()); err != nil {
+		log.Fatal(err)
+	}
+}
+
 	func main() {
 		flag.Parse()
 		if err := RunI("Get", "obsidian.GetRequest", NewObsidianClient)(nil, flag.Args()); err != nil {
 			log.Fatal(err)
 		}
 	}
-}
+
 
 
 
@@ -329,8 +334,9 @@ func RunH(
 			}
 			fmt.Println(string(data))
 		}
+	}
+	
 
-		server := newServer(nil)
 		sv := reflect.ValueOf(server)
 		method = sv.MethodByName(method)
 		if method.IsValid() {
@@ -343,7 +349,15 @@ func RunH(
 			if !result[1].IsNil() {
 				return result[1].Interface().(error)
 			}
-			
+			out := result[0].Interface()
+			data, err := serverMarshall(out)
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(data))
+		}
+
+}
 
 // function dialed makes a connection to the server and returns a client connection to the server if grpc
 // credentials are not provided, it returns an error if credentials are provided and the connection is not established.
@@ -363,23 +377,14 @@ func dialed(addr string) (*grpc.ClientConn, error) {
 		opts = append(opts, grpc.WithTransportCredentials(creds))
 	} else {
 		opts = append(opts, grpc.WithInsecure())
-	}
-	opts = append(opts, grpc.WithBlock())
-	conn, err := grpc.Dial(addr, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return conn, nil
-}
-	const (
-		defaultAddr = "localhost:50051"
-		for defaultAddr:= "localhost:50051"
-	)
-	
-	func main() {
-		flag.Parse()
-		if err := RunH("Get", NewObsidianClient, NewObsidianServer, proto.Marshal, proto.Unmarshal)(nil, flag.Args()); err != nil {
-			log.Fatal(err)
+
+	for _, opt := range opts {
+		conn, err := grpc.Dial(addr, opt)
+		if err != nil {
+			return nil, err
 		}
+		return conn, nil
 	}
+	return nil, errors.New("no valid dial options")
 }
+
