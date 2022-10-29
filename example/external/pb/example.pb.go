@@ -9,16 +9,12 @@ import (
 
 	context "golang.org/x/net/context"
 
+	"github.com/DanielPickens/Obsidian"
 	"github.com/spf13/cobra"
 	grpc "google.golang.org/grpc"
 )
 
 // Obsidian imports
-import (
-	"github.com/DanielPickens/Obsidian"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -237,10 +233,6 @@ var _Example_EchoCmd = &cobra.Command{
 			return NewExampleClient(c)
 		},
 	),
-}
-var Obsidian = &cobra.Command{
-	Use:   "obsidian",
-	Short: "Obsidian is a CLI for gRPC services.",
 }
 
 // Register commands with the root command and service command

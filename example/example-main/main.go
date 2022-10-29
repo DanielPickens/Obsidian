@@ -5,11 +5,7 @@ import (
 	"os"
 
 	"github.com/DanielPickens/Obsidian"
-	
-	_ "github.com/DanielPickens/Obsidian/example/pb"
 )
-
-
 
 func main() {
 	Obsidian.SetCmdInfo(

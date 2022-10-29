@@ -31,6 +31,7 @@ func (TestServer) EmptyCall(ctx context.Context, req *Empty) (*Empty, error) {
 		return nil, status.Error(failLate, "fail")
 	}
 
+
 	return req, nil
 }
 
@@ -296,13 +297,14 @@ func (TestServer) QuarterDuplexCall(str TestService_QuarterDuplexCallServer) err
 	return nil
 }
 
-func (TestServer) HalfDuplexCall(str TestService_HalfDuplexCallServer) error {
+func (TestServer) HalfDuplexCall(str ) error {
 	headers, trailers, failEarly, failLate := processMetadata(str.Context())
 	str.SetHeader(headers)
 	str.SetTrailer(trailers)
 	if failEarly != codes.OK {
 		return status.Error(failEarly, "fail")
 	}
+}
 
 	var reqs []*StreamingOutputCallRequest
 	for {
@@ -379,25 +381,4 @@ func toMetadatReadWriter(vals []string) grpcurl.MetadataReadWriter {
 	}
 	return grpcurl.MetadataFromHeaders(grpcurl.MetadataFromHeaders(vals))
 }
-
-
-// var _ TestServiceServer = TestServer{}
-
-// func main() {
-// 	flag.Parse()
-// 	lis, err := net.Listen("tcp", *listenAddr)
-// 	if err != nil {
-// 		log.Fatalf("failed to listen: %v", err)
-// 	}
-// 	v:= reflect.ValueOf(TestServer{})
-// 	for v = v.Elem(); v.Kind() == reflect.Ptr; v = v.Elem() {}
-// 	if v.Kind() != reflect.Struct {
-// 		log.Fatalf("TestServer is not a struct")
-// 	}
-// 	s := grpc.NewServer()
-// 	RegisterTestServiceServer(s, TestServer{})
-// 	if err := s.Serve(lis); err != nil {
-// 		log.Fatalf("failed to serve: %v", err)
-// 	}
-// }
-
+}
