@@ -36,6 +36,7 @@ var _ = Describe("Server", func() {
 	})
 
 
+
 type server struct{}
 
 // GetNumber returns a number as a response to the request then returns an error if the request is invalid if
@@ -56,6 +57,7 @@ func (s *server) Echo(ctx context.Context, in *pb.EchoData) (*pb.EchoData, error
 	log.Println("Echo")
 	return in, nil
 }
+
 
 func main() {
 	lis, err := net.Listen("tcp", port)

@@ -7,6 +7,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type testServer struct {
+	grpcConnFactory *GrpcConnFactory
+
+
+
+	WithoutMergeMetaData = func() Option {
+		return func(c *grpcConnFactory) {
+			c.mergeMetaData = false
+
+		}
+	}
+}
+
 func TestWithAuthority(t *testing.T) {
 	authority := "authority1"
 	grpcConnFact := NewGrpcConnFactory(WithAuthority(authority))
@@ -50,6 +63,7 @@ func TestWithHeaders(t *testing.T) {
 
 func TestWithTimeout(t *testing.T) {
 	timeout := 30 * time.Second
+
 	grpcConnFact := NewGrpcConnFactory(WithTimeout(timeout))
 
 	assert.Equal(t, timeout, grpcConnFact.settings.timeout)
@@ -83,5 +97,3 @@ func TestWithoutMergeMetaData(t *testing.T) {
 
 	assert.False(t, grpcConnFact.settings.mergeMetadata)
 }
-
-

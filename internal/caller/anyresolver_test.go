@@ -61,7 +61,7 @@ func TestAnyResolver_LoadedFiles(t *testing.T) {
 
 	userType := "Obsidian.testing.User"
 
-	typeURL := "type.googleapis.com/" + userType
+	typeURL := "type.example.com/" + userType
 	m, err := r.Resolve(typeURL)
 	require.NoError(t, err)
 
@@ -73,14 +73,14 @@ func TestAnyResolver_LoadedFiles(t *testing.T) {
 func TestAnyResolver_LoadedFiles_With_Fallback(t *testing.T) {
 	sml := NewServiceMetadataProto([]string{"../../testdata/test.proto"}, nil)
 	meta, err := sml.GetServiceMetaDataList(context.Background())
-	require.NoError(t, err)	
+	require.NoError(t, err)
 
 	r := &anyResolver{NewFileDescCache(meta)}
 
 	typeURL := "testing.protobuf.DoesNotExist"
 	m, err := r.Resolve(typeURL)
 	require.NoError(t, err)
-	
+
 	_, ok := m.(*wrappers.StringValue)
 	require.True(t, ok, "wrong type, expected: %s", typeURL)
 }
@@ -99,4 +99,3 @@ func TestAnyResolver_LoadedFiles_WellKnown(t *testing.T) {
 	_, ok := m.(*wrappers.StringValue)
 	require.True(t, ok, "wrong type, expected: %s", typeURL)
 }
-

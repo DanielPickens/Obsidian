@@ -5,10 +5,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"net"
 	"os"
 	"strings"
 	"testing"
-	"testing/quick"
 	"time"
 
 	app_testing "github.com/Daniel/obsidian-client-cli/internal/testing"
@@ -18,8 +19,10 @@ import (
 	"github.com/spyzhov/ajson"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 )
 
@@ -221,7 +224,7 @@ func appCallStreamOutput(t *testing.T, app *app, buf *bytes.Buffer) {
 	assert.Equal(t, jsonString(root, "$[1].user.name"), getEncBody(respSize2))
 }
 
-// appCallStreamOutputError is a test for a streaming output call with an error 
+// appCallStreamOutputError is a test for a streaming output call with an error
 // when the response is not a valid json and the output format is json is requesting json from the server
 // then the output is expected to be a json with the error in the response_status field and the response_parameters field is not present in the response
 // which is the same as the output of the server and is expecting a failed call for the client side to handle
@@ -287,7 +290,7 @@ func appCallBidiStreamErrorProcessing(t *testing.T, app *app, buf *bytes.Buffer)
 
 // appCallBidiStream is a test for a bidi streaming call
 // if the fullduplex call is successful the output is expected to be a json with the response_parameters field
-// then the call is successful the response fields will allow 
+// then the call is successful the response fields will allow
 // If there is not a response_parameters field the call is expected to be failed
 // if the call is not successful the response_status field will contain error messages and the response_parameters field will not be present
 func appCallBidiStreamError(t *testing.T, app *app, buf *bytes.Buffer) {
@@ -474,7 +477,7 @@ func appCallStreamInputError(t *testing.T, app *app, buf *bytes.Buffer) {
 `
 
 	msg := fmt.Sprintf(msgTmpl, errCode)
-	
+
 	err := app.callStream(context.Background(), m, [][]byte{[]byte(msg)})
 	if err == nil {
 		t.Error("error expected, got nil")
@@ -496,22 +499,22 @@ func jsonString(n *ajson.Node, jsonPath string) string {
 	return nodes[0].MustString()
 }
 
-
 func findMethod(t *testing.T, app *app, serviceName, methodName string) (*desc.MethodDescriptor, bool) {
-		m, err := app.selectMethod(app.getService(serviceName), methodName)
-		if err != nil {
-			t.Error(err)
-			return nil, false
-		}
-	
-		if m == nil {
-			t.Error("method not found")
-			return nil, false
-		}
-	
-		return m, true
+	m, err := app.selectMethod(app.getService(serviceName), methodName)
+	if err != nil {
+		t.Error(err)
+		return nil, false
 	}
-//Tests stats collection during urnary calls and bidi calls
+
+	if m == nil {
+		t.Error("method not found")
+		return nil, false
+	}
+
+	return m, true
+}
+
+// Tests stats collection during urnary calls and bidi calls
 func checkStats(t *testing.T, app *app, msg []byte) {
 	m, ok := findMethod(t, app, "obsidian_client_cli.testing.TestService", "UnaryCall")
 	if !ok {
@@ -650,7 +653,7 @@ func TestToJSONArrayCoversion(t *testing.T) {
 	}
 }
 
-func TestToJSONArrayError(t *testing.T) { 
+func TestToJSONArrayError(t *testing.T) {
 	cases := []struct {
 		name        string
 		msg         string
@@ -754,45 +757,39 @@ func TestAuthorityHeaderError(t *testing.T) {
 		expectedAuthority string
 	}{
 		{
-			name:              "defaultAuthority",
-			target:            app_testing.TestServerAddr(),
+			name:   "defaultAuthority",
+			target: app_testing.TestServerAddr(),
 
 			expectedAuthority: app_testing.TestServerAddr(),
 
 			errExpected: false,
 		},
 		{
-			name:              "customAuthorityInTarget",
-
+			name: "customAuthorityInTarget",
 
 			target:            app_testing.TestServerAddr() + ",authority=" + authority1,
 			expectedAuthority: authority1,
-			errExpected:      false,
+			errExpected:       false,
 		},
 		{
-			name:              "customAuthorityArg",
+			name: "customAuthorityArg",
 
-			target:            app_testing.TestServerAddr() + ",authority=" + authority1,
-			authority:         authority2,
+			target:    app_testing.TestServerAddr() + ",authority=" + authority1,
+			authority: authority2,
 
 			expectedAuthority: authority2,
 
 			errExpected: false,
-
 		},
 
 		{
-			name:              "customAuthorityArgError",
+			name: "customAuthorityArgError",
 
-			target:            app_testing.TestServerAddr() + ",authority=" + authority1,
-
-
-
+			target: app_testing.TestServerAddr() + ",authority=" + authority1,
 
 			expectedAuthority: authority1,
 
 			errExpected: true,
-
 		},
 	}
 
@@ -809,7 +806,6 @@ func TestAuthorityHeaderError(t *testing.T) {
 				w:             buf,
 			})
 			if err != nil {
-
 
 				t.Fatal(err)
 
@@ -829,7 +825,6 @@ func TestAuthorityHeaderError(t *testing.T) {
 }
 `
 
-
 			msg := []byte(fmt.Sprintf(msgTmpl, userId, userName))
 
 			ctx := metadata.AppendToOutgoingContext(context.Background(), app_testing.CheckHeader, ":authority="+tt.expectedAuthority)
@@ -847,7 +842,7 @@ func TestAuthorityHeaderError(t *testing.T) {
 					t.Errorf("expected no error, got %s", buf.String())
 				}
 			}
-		}
+		})
 	}
 }
 
@@ -906,7 +901,7 @@ func CheckStatsInAuthorityCalls() {
   "user": { "id": %d, "name": "%s" }
 }
 `
-// TODO: add a test for the case where the authority is not set in the target or the authority flag.
+			// TODO: add a test for the case where the authority is not set in the target or the authority flag.
 			msg := []byte(fmt.Sprintf(msgTmpl, userId, userName))
 
 			ctx := metadata.AppendToOutgoingContext(context.Background(), app_testing.CheckHeader, ":authority="+tt.expectedAuthority)
@@ -921,7 +916,7 @@ func CheckStatsInAuthorityCalls() {
 	}
 }
 
-//test that the authority header is set correctly when calling a service with a custom authority
+// test that the authority header is set correctly when calling a service with a custom authority
 func CheckStatsInAuthorityCalls() {
 	authority1 := "testservice1"
 	authority2 := "testservice2"
@@ -977,8 +972,11 @@ func CheckStatsInAuthorityCalls() {
   "user": { "id": %d, "name": "%s" }
 }
 `
+		})
+	}
+}
 
-//test that checks the service method is called with the correct authority heade when the authority is set in the target service descriptor
+// test that checks the service method is called with the correct authority heade when the authority is set in the target service descriptor
 func findMethod(t *testing.T, app *app, service, method string) (*desc.MethodDescriptor, bool) {
 	t.Helper()
 
@@ -1003,42 +1001,55 @@ func findMethod(t *testing.T, app *app, service, method string) (*desc.MethodDes
 	return m, true
 }
 
+func FindDiscoveryProbe() {
+	// Create a new server and register the service.
+	s := grpc.NewServer()
+	pb.RegisterGreeterServer(s, &server{})
 
-func FindDiscoveryProbe()
-if (app, err := newApp(&startOpts{
-	Target:        app_testing.TestServerAddr(),
-	Deadline:      15,
-	IsInteractive: false,
-	Discover:      true,
-	Service:       "TestService",
-})
+	// Register reflection service on gRPC server.
+	reflection.Register(s)
 
-buf := &bytes.Buffer{}
-app.w = buf
+	// Create a listener on TCP port 50051 on all available interfaces.
+	lis, err := net.Listen("tcp", ":50051")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
 
-if err != nil {
-	t.Error(err)
-	return)
-
-m, ok := findMethod(t, app, "obsidian_client_cli.testing.TestService", "UnaryCall")
-
-if !ok {
-	return
+	// Start serving requests.
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }
 
-else {
-	t.Errorf("expected error, got %s", buf.String())
-}
+// if (app, err := newApp(&startOpts{
+// 	Target:        app_testing.TestServerAddr(),
+// 	Deadline:      15,
+// 	IsInteractive: false,
+// 	Discover:      true,
+// 	Service:       "TestService",
+// })
 
-if !strings.Contains(buf.String(), "authority header not found") {
-	t.Errorf("expected error, got %s", buf.String())
-}
+// buf := &bytes.Buffer{}
+// app.w = buf
 
-else {
-	t.Errorf("expected no error, got %s", buf.String())
-}
+// if err != nil {
+// 	t.Error(err)
+// 	return)
 
-}
+// m, ok := findMethod(t, app, "obsidian_client_cli.testing.TestService", "UnaryCall")
 
+// if !ok {
+// 	return
+// }
 
+// else {
+// 	t.Errorf("expected error, got %s", buf.String())
+// }
 
+// if !strings.Contains(buf.String(), "authority header not found") {
+// 	t.Errorf("expected error, got %s", buf.String())
+// }
+
+// else {
+// 	t.Errorf("expected no error, got %s", buf.String())
+// }

@@ -25,7 +25,7 @@ func add(c *cli.Context) error {
 
 	if protoroot == "" {
 		protoroot = "./"
-}
+	}
 	_err := os.MkdirAll(protoroot, 0755)
 	if _err != nil {
 		return _err
@@ -42,13 +42,13 @@ func add(c *cli.Context) error {
 	}
 
 	cuefile := protoroot + "/" + targetname + ".cue"
-	cue, err:= GenerateCueFile(cuefile, protofile, protoimportpath)
+	cue, err := GenerateCueFile(cuefile, protofile, protoimportpath)
 	if err != nil {
 		if err.Error() == "No proto file found" {
 			fmtPrintln("No file exists. Generating Proto file")
 			return nil
 		}
-}
+	}
 	tmplt = template.New("testcase")
 	tmplt, err = tmplt.Parse(testcase)
 	m := make(map[string]string)
@@ -61,7 +61,6 @@ func add(c *cli.Context) error {
 	m["protoimport"] = protoimport
 	m["cue"] = cue
 	f, err := os.Create(protoroot + "/" + targetname + ".go")
-
 
 	if err != nil {
 		return err

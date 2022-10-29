@@ -136,14 +136,13 @@ func TestMarshallJSon_toProtobuf(t *testing.T) {
 	require.NoError(t, err, " error building new message protobuf descriptor")
 
 	sc := NewServiceCaller(nil, JSON, JSON, nil)
-	b, err := sc.marshalMessage([]byte(`{"id":1,"name":"test"}`))
+	b, err := sc.marshalMessage(md, []byte(`{"id":1,"name":"test"}`))
 	require.NoError(t, err)
 
 	m := dynamic.NewMessage(md)
-	err = m.UnmarshalJSON(b)
+	err = m.Unmarshal(b)
 	require.NoError(t, err)
 
-	assert.Equal(t, int32(1), m.GetFieldByName("id"))
-	assert.Equal(t, "test", m.GetFieldByName("name"))
+	assert.Equal(t, int32(1), m.GetFieldByName("id").(int32))
+	assert.Equal(t, "test", m.GetFieldByName("name").(string))
 }
-

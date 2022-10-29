@@ -119,9 +119,7 @@ func lowerFirst(s string) string {
 	return string(unicode.ToLower(r)) + s[n:]
 }
 
-func GenerateExports(gen *generator.Generator) {
-	o := &Obsidian{gen: gen}
-	o.Init(gen)
-	o.GenerateImports(gen.Request.FileToGenerate[0])
-	o.Generate(gen.Request.FileToGenerate[0])
-}
+// func GenerateExports(gen *generator.Generator) {
+// 	o := &Obsidian{gen: gen}
+// 	o.Init(gen)
+// 	gen.request:=gen.Request(o.GenerateImports(o.Generate))

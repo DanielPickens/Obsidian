@@ -20,9 +20,23 @@ type eurekaBuilder struct{}
 // Build creates and starts a DNS resolver that watches the name resolution of the target.
 func (b *eurekaBuilder) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
 
-	eurekaServer := target.Authority
-	serviceName := target.Endpoint
+	eurekaServer := URL(target.Authority)
+	URL := url.URL{Scheme: "http", Host: eurekaServer, Path: "/eureka/apps/"}
+	if strings.Contains(target.Endpoint, "/") {
+		URL.Path = URL.Path + target.Endpoint
+	} else {
+		URL.Path = URL.Path + target.Endpoint + "/default"
 	eurekaPath := ""
+	target = resolver.Target{
+		Scheme:   "http",
+		Endpoint: eurekaServer,
+	}
+
+	r := &eurekaResolver{
+		target: target,
+		cc:     cc,
+	}
+	
 
 	if len(serviceName) == 0 {
 		serviceName = eurekaServer
@@ -51,10 +65,9 @@ func (b *eurekaBuilder) Build(target resolver.Target, cc resolver.ClientConn, op
 }
 
 // Scheme returns the naming scheme of this resolver builder, which is "eureka".
-func (b *eurekaBuilder) Scheme() string {
-	return "eureka"
-}
-
+// func (b *eurekaBuilder) Scheme() string {
+// 	return "eureka"
+// }
 
 type eurekaResolver struct {
 	EurekaServer string
@@ -65,12 +78,22 @@ type eurekaResolver struct {
 
 // ResolveNow invoke an immediate resolution of the target that this dnsResolver watches.
 func (d *eurekaResolver) ResolveNow(resolver.ResolveNowOptions) {
+	instances, err := ec.GetApp(d.EurekaServer, d.EurekaPath, d.ServiceName)
+
 
 	eurekaURL := url.URL{Scheme: "http", Host: d.EurekaServer, Path: d.EurekaPath}
 
 	eurekaClient := ec.NewClient([]string{
 		eurekaURL.String(),
 	})
+
+	apps, err := eurekaClient.GetApps()
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 
 	application, err := eurekaClient.GetApplication(d.ServiceName)
 
@@ -112,4 +135,8 @@ func (d *eurekaResolver) ResolveNow(resolver.ResolveNowOptions) {
 
 }
 
-func (d *eurekaResolver) Close() {}
+func (d *eurekaResolver) Close(){
+	var _ = d.ClientConn.Close()
+
+}
+}

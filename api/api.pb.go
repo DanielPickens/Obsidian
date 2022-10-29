@@ -30,6 +30,8 @@ var _ = grpc.SupportPackageIsVersion4
 var _ = context.Background
 var _ = status.Errorf
 var _ = codes.Unknown
+var _ = ServicePingHandler
+
 
 const _ = protobuf_pkg_5fapi_2fapi_2eproto_goTypes
 
@@ -136,23 +138,81 @@ func PingGreet(ctx context.Context, in *PingGreetRequest, opts ...grpc.CallOptio
 	var _ ServiceServer = (*serviceServer)(nil)
 	var _ ServiceClient = (*serviceClient)(nil)
 
-func _Service_PingGreet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-		in:= new(PingGreetRequest)
-		if (err := dec(in)) != nil {
-			return nil, err
-		}
-		if interceptor == nil {
-			return srv.(ServiceServer).PingGreet(ctx, in)
-		}
-		info := &grpc.UnaryServerInfo{
-			Server:     srv,
-			FullMethod: "/api.Service/PingGreet",
-		}
-		handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.(ServiceServer).PingGreet(ctx, req.(*PingGreetRequest))
-		}
-		return interceptor(ctx, in, info, handler)
+func _ServicePingHandler(srv interface{}, ctx context.Context) (interface{}, error) { *m = PingMessengersRequest_Wrappers{} }
+		return m, nil
 	}
+	return nil, status.Errorf(codes.InvalidArgument, "type %T is not a valid type for message", m)
+
+func _Service_PingGreet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	var in PingGreetRequest
+	if err := dec(&in); err != nil {
+		return nil, err
+	}
+	return srv.(ServiceServer).PingGreet(ctx, &in)
+}
+
+func _Service_PingMessengers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PingMessengersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).PingMessengers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Service/PingMessengers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).PingMessengers(ctx, req.(*PingMessengersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Service_PingGreet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PingGreetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceServer).PingGreet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.Service/PingGreet",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceServer).PingGreet(ctx, req.(*PingGreetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Service_PingGreetStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ServiceServer).PingGreetStream(&servicePingGreetStreamServer{stream})
+}
+
+func _Service_PingGreetStreamDesc() *grpc.StreamDesc {
+	return &grpc.StreamDesc{
+		StreamName:    "PingGreetStream",
+		Handler:       _Service_PingGreetStream_Handler,
+		ServerStreams: true,
+	}
+}
+
+func _Service_PingGreetDesc() *grpc.MethodDesc {
+	return &grpc.MethodDesc{
+		MethodName: "PingGreet",
+		Handler:    _Service_PingGreet_Handler,
+	}
+}
+
+func _ Service_PingMessengersDesc() *grpc.MethodDesc {
+	return &grpc.MethodDesc{
+		MethodName: "PingMessengers",
+		Handler:    _Service_PingMessengers_Handler,
+	}
+}
+
 
 
 func _Service_PingGreetStream_Handler(srv interface{}, stream grpc.ServerStream) error {

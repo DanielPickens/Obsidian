@@ -128,7 +128,6 @@ func (r *msgReader) writeHistory() (err error) {
 	return nil
 }
 
-
 func (r *msgReader) readHistorySize(reader io.Reader, bufferSize int) (num int, err error) {
 	in := bufio.NewReaderSize(reader, bufferSize)
 	num = 0
@@ -203,19 +202,9 @@ func UploadReadLines() {
 		log.Fatal(err)
 	}
 
-	for(upload)
-	try (BufferedReader br = new BufferedReader(new FileReader(s))) {
-		if (br.readLine() == null) {
-			System.out.println("File is empty");
-		}
-	} catch (IOException e) {
-		e.printStackTrace();
-	if upload:=true; upload {
-		fmt.Println("upload")
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		fmt.Println(scanner.Text())
 	}
-
-	else{
-		return nil, err
-		
-	}
+	defer f.Close()
 }

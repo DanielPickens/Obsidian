@@ -5,6 +5,10 @@ import (
 	"testing"
 )
 
+var(
+	isValidPath: func(string) bool = func(string) bool { return true }
+
+)
 func TestMetaDataListSingleFile(t *testing.T) {
 	tests := []struct {
 		name      string

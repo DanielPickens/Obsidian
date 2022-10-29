@@ -310,15 +310,4 @@ func TestNewStatsHanlerResponseTime(t *testing.T) {
 	if s.RespSize() != expectedRespSize {
 		t.Errorf("invalid resp size: %d, expected: %d", s.RespSize(), expectedRespSize)
 	}
-
-	expectedReqTime := int64(1)
-	if s.ReqTime() != expectedReqTime {
-		t.Errorf("invalid req time: %d, expected: %d", s.ReqTime(), expectedReqTime)
-	}
-
-	expectedRespTime := int64(1)
-	if s.RespTime() != expectedRespTime {
-		t.Errorf(" invalid resp time: %d, expected: %d", s.RespTime(), expectedRespTime)
-	}
 }
- 

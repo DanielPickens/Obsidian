@@ -56,13 +56,13 @@ func TestAppServiceCallsProtoBinary(t *testing.T) {
 	t.Run("appCallUnary", func(t *testing.T) {
 		buf.Reset()
 		appCallUnary(t, app, buf)
-	}
+	},
 	)
 
 	t.Run("appCallStreamOutput", func(t *testing.T) {
 		buf.Reset()
 		appCallStreamOutput(t, app, buf)
-	}
+	},
 	)
 }
 
@@ -86,15 +86,35 @@ func TestAppServiceCallsProtoJSON(t *testing.T) {
 	t.Run("appCallUnary", func(t *testing.T) {
 		buf.Reset()
 		appCallUnary(t, app, buf)
-	}
+	},
 	)
 
 	t.Run("appCallStreamOutput", func(t *testing.T) {
 		buf.Reset()
 		appCallStreamOutput(t, app, buf)
-	}
+	},
 	)
 }
 
+func appCallUnary(t *testing.T, app *app, buf *bytes.Buffer) {
+	err := app.Start([]byte(`{
+		"service": "TestService",
+		"method": "Unary",
+		"request": {
+			"message": "Hello World"
+		}
+	}`))
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
-func 
+	res := buf.String()
+	if res != `{
+	"message": "Hello World"
+}
+` {
+		t.Errorf("expected Hello World response, got %s", res)
+		return
+	}
+}

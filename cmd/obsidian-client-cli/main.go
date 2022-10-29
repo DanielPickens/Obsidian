@@ -429,7 +429,9 @@ func (a *App) init() error {
 }
 
 func (a *App) Start(message []byte) error {
-	if a.opts.Is 
+	if a.opts.IsInteractive {
+		return a.interactive()
+	}
 [...]
 if a.opts.IsInteractive {
 		return a.interactive()
