@@ -124,4 +124,16 @@ func (fw *FieldWalker) FindEnumValue(md *desc.MessageDescriptor, name string) *d
 	return found
 
 }
+//checks fields fields tree for NewFIeldWalkers and returns found from WalkMaps
+
+func CheckFieldMapType(md *desc.MessageDescriptor, name string) bool {
+	var found bool
+	fw := NewFieldWalker()
+	fw.WalkMaps(md, func(f *desc.FieldDescriptor) {
+		if f.GetName() == name {
+			found = true
+		}
+	})
+	return found
+}
 
