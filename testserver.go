@@ -297,6 +297,8 @@ func (TestServer) QuarterDuplexCall(str TestService_QuarterDuplexCallServer) err
 	return nil
 }
 
+
+
 func (TestServer) HalfDuplexCall(str ) error {
 	headers, trailers, failEarly, failLate := processMetadata(str.Context())
 	str.SetHeader(headers)
@@ -304,7 +306,32 @@ func (TestServer) HalfDuplexCall(str ) error {
 	if failEarly != codes.OK {
 		return status.Error(failEarly, "fail")
 	}
-}
+
+	rsp := &StreamingOutputCallResponse{Payload: &Payload{}}
+	for {
+		if str.Context().Err() != nil {
+			return str.Context().Err()
+		}
+		req, err := str.Recv()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return err
+		}
+		for _, param := range req.ResponseParameters {
+			sz := int(param.GetSize())
+			buf := make([]byte, sz)
+			for i := 0; i < sz; i++ {
+				buf[i] = byte(i)
+			}
+			rsp.Payload.Type = req.ResponseType
+			rsp.Payload.Body = buf
+
+			if err := str.Send(rsp); err != nil {
+				return err
+			}
+		}
+	}
 
 	var reqs []*StreamingOutputCallRequest
 	for {
@@ -334,16 +361,16 @@ func (TestServer) HalfDuplexCall(str ) error {
 	return nil
 }
 
-const (
+// const (
 	
-	MetadataReplyHeaders = "reply-with-headers"
+// 	MetadataReplyHeaders = "reply-with-headers"
 	
-	MetadataReplyTrailers = "reply-with-trailers"
+// 	MetadataReplyTrailers = "reply-with-trailers"
 	
-	MetadataFailEarly = "fail-early"
+// 	MetadataFailEarly = "fail-early"
 	
-	MetadataFailLate = "fail-late"
-)
+// 	MetadataFailLate = "fail-late"
+// )
 
 func processMetadata(ctx context.Context) (metadata.MD, metadata.MD, codes.Code, codes.Code) {
 	md, ok := metadata.FromIncomingContext(ctx)
@@ -381,4 +408,83 @@ func toMetadatReadWriter(vals []string) grpcurl.MetadataReadWriter {
 	}
 	return grpcurl.MetadataFromHeaders(grpcurl.MetadataFromHeaders(vals))
 }
+
+// NewTestServiceServer creates a new TestServiceServer if CallOption
+// is not provided, otherwise it creates a new TestServiceServer with
+// the provided CallOption by wrapping the server with the provided CallOption for check in range of vals.  
+//appends opts to the end of the existing options when waiting for the server to be ready.
+func NewTestServiceServer(opts ...grpc.ServerOption) *TestServiceServer {
+	return &TestServiceServer{opts: opts}
+}
+
+// NewTestServiceServerWithCallOptions creates a new TestServiceServer with the provided CallOption by wrapping the server with the provided CallOption for check in range of vals.
+func NewTestServiceServerWithCallOptions(opts ...grpc.ServerOption) *TestServiceServer {
+	return &TestServiceServer{opts: opts}
+}
+
+// RegisterTestServiceServer registers the provided server with the gRPC server.
+func RegisterTestServiceServer(s *grpc.Server, srv TestServiceServer) {
+	RegisterTestServiceServerWithCallOptions(s, srv, nil)
+}
+
+// RegisterTestServiceServerWithCallOptions registers the provided server with the gRPC server with the provided CallOption by wrapping the server with the provided CallOption for check in range of vals.
+func RegisterTestServiceServerWithCallOptions(s *grpc.Server, srv TestServiceServer, opts []grpc.ServerOption) {
+	RegisterTestServiceServerWithCallOptions(s, srv, opts)
+}
+
+// RegisterTestServiceHandlerFromEndpoint is same as RegisterTestServiceHandler but
+// automatically dials to "endpoint" and closes the connection when "ctx" gets done.
+func RegisterTestServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+	conn, err := grpc.DialContext(ctx, endpoint, opts...)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			conn.Close()
+		}
+	}()
+	return RegisterTestServiceHandler(ctx, mux, conn)
+}
+
+// RegisterTestServiceHandler registers the http handlers for service TestService to "mux".
+// The handlers forward requests to the grpc endpoint over "conn".
+func RegisterTestServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterTestServiceHandlerClient(ctx, mux, NewTestServiceClient(conn))
+}
+
+// RegisterTestServiceHandlerClient registers the http handlers for service TestService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "TestServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "TestServiceClient" doesn't
+// go through the normal gRPC flow (creating a gRPC client etc.) then some interceptors may be bypassed.
+func RegisterTestServiceHandlerClient() {
+	return RegisterTestServiceHandlerClient(ctx, mux, client)
+}
+
+func toCallOptions(vals []string) []grpc.CallOption {
+	if len(vals) == 0 {
+		return nil
+	}
+	var opts []grpc.CallOption
+	for _, val := range vals {
+		if val == "wait-for-ready" {
+			opts = append(opts, grpc.WaitForReady(true))
+		}
+	}
+	return opts
+}
+
+
+func toMutox(vals []string) *sync.Mutex {
+	if len(vals) == 0 {
+		return nil
+	}
+	return &sync.Mutex{}
+}
+
+func toServer(s interface{}) *grpc.Server {
+	if srv, ok := s.(*grpc.Server); ok {
+		return srv
+	}
+	return nil
 }
