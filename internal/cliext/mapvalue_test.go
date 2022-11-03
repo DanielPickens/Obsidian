@@ -56,3 +56,15 @@ func TestMapValueError(t *testing.T) {
 	}
 }
 
+func TestMapValueEmpty(t *testing.T) {
+	tests := []string{
+		"", "  :  ", "  :  : ",
+	}
+
+	for _, tt := range tests {
+		mv := NewMapValue()
+		err := mv.Set(tt)
+
+		assert.Error(t, err, tt)
+	}
+}

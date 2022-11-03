@@ -206,3 +206,17 @@ func TestDurationNonPrimativeDataType(t *testing.T) {
 	}
 }
 
+func TestDurationInvalidParseError(t *testing.T) {
+	_, err := ParseDuration("oops")
+	assert.Error(t, err, "Expected non nil error")
+
+	if err != nil {
+		assert.Equal(t, "invalid duration: oops", err.Error())
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.val.String()
+			assert.Equal(t, tt.expected, res)
+		})
+	}
+}
