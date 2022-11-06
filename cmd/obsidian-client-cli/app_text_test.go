@@ -95,26 +95,3 @@ func TestAppServiceCallsProtoJSON(t *testing.T) {
 	},
 	)
 }
-
-func appCallUnary(t *testing.T, app *app, buf *bytes.Buffer) {
-	err := app.Start([]byte(`{
-		"service": "TestService",
-		"method": "Unary",
-		"request": {
-			"message": "Hello World"
-		}
-	}`))
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	res := buf.String()
-	if res != `{
-	"message": "Hello World"
-}
-` {
-		t.Errorf("expected Hello World response, got %s", res)
-		return
-	}
-}

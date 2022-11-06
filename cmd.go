@@ -389,4 +389,5 @@ func dialed(addr string) (*grpc.ClientConn, error) {
 		}
 	}
 	return conn, nil
+}
 
