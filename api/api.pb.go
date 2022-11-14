@@ -222,14 +222,6 @@ func _Service_PingGreetDesc() *grpc.MethodDesc {
 	}
 }
 
-// func _ Service_PingMessengersDesc() *grpc.MethodDesc {
-// 	return &grpc.MethodDesc{
-// 		MethodName: "PingMessengers",
-// 		Handler:    _Service_PingMessengers_Handler,
-// 	}
-// }
-
-
 
 func _Service_PingGreetStream_Handler(srv interface{}, stream grpc.ServerStream) error {
 		return srv.(ServiceServer).PingGreetStream(&servicePingGreetStreamServer{stream})
@@ -288,6 +280,8 @@ func _Service_PingGreetStream_Handler(srv interface{}, stream grpc.ServerStream)
 			for (i := 0; i < len(fileDescriptor_5fapi_2fapi_2eproto); i++) {
 				fileDescriptor_5fapi_2fapi_2eproto[i] = 0
 			}
+		
+		}
 
 			var fileDescriptor_5fapi_2fapi_2eproto = []byte{
 				// 0x0a, 0x0f, 0x61, 0x70, 0x69, 0x2f, 0x61, 0x70, 0x69, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12,
@@ -487,7 +481,7 @@ func SendGreetRequests() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		
+	}
 
 	var client = NewServiceClient(conn)
 	var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
