@@ -14,10 +14,11 @@ var (
 
 // MapValue allows passing multiple key/value pairs from the command line args to the service
 // if the key is prefixed with "sl:::", it will be deserialized to the map
-// type MapValue struct {
-// 	m    map[string][]string
-// 	isSet bool
-// }
+//
+//	type MapValue struct {
+//		m    map[string][]string
+//		isSet bool
+//	}
 type MapValue struct {
 	m     map[string][]string
 	isSet bool
@@ -68,7 +69,6 @@ func (mv *MapValue) Set(param string) error {
 	return nil
 }
 
-
 func (mv *MapValue) Serialize() string {
 	jsonBytes, _ := json.Marshal(mv.m)
 	return fmt.Sprintf("%s%s", slPfx, string(jsonBytes))
@@ -93,4 +93,15 @@ func ParsedValidMapValue(val interface{}) (map[string][]string, bool) {
 	}
 
 	return nil, false
+}
+
+// Parses the serialized map value from the string if the string is prefixed with "sl:::", it will be deserialized to the map
+func ParseSerialzedValues(val string) map[string][]string {
+	if strings.HasPrefix(val, slPfx) {
+		m := map[string][]string{}
+		_ = json.Unmarshal([]byte(strings.Replace(val, slPfx, "", 1)), &m)
+		return m
+	}
+
+	return nil
 }
