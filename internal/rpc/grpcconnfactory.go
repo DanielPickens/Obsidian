@@ -210,20 +210,8 @@ func (f *GrpcConnFactory) getConn(target string, dial dialFunc, opts ...grpc.Dia
 	return conn.conn, conn.dialErr
 }
 
-// func minRecvMsgSize(s int) int {
-// 	if s < 0 {
-// 		return 0
-// 	}
-// 	return s
-// }
 
 
-
-// func WithMinRcvMsgSize(messageSize int) ConnFactoryOption {
-// 	return func(s *GrpcConnFactorySettings) {
-// 		s.minRecvMsgSize = messageSize
-// 	}
-// }
 
 
 func (f *GrpcConnFactory) Close() error {
